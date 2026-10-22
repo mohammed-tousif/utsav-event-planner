@@ -43,13 +43,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     provider,
     gemini: {
       apiKey,
-      model: (env.GEMINI_MODEL ?? 'gemini-3.8-flash').trim(),
-      fallbackModels: (env.GEMINI_FALLBACK_MODELS ?? env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.6-flash,gemini-3.5-flash-lite')
+      model: (env.GEMINI_MODEL ?? 'gemini-3.5-flash-lite').trim(),
+      fallbackModels: (env.GEMINI_FALLBACK_MODELS ?? env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.6-flash,gemini-3.8-flash')
         .split(',')
         .map((m) => m.trim())
         .filter(Boolean)
         .slice(0, 3),
-      timeoutMs: int(env.GEMINI_TIMEOUT_MS, 60_000, 5_000, 120_000),
+      timeoutMs: int(env.GEMINI_TIMEOUT_MS, 40_000, 5_000, 120_000),
       thinkingLevel: (THINKING_LEVELS as readonly string[]).includes(level)
         ? (level as ServerConfig['gemini']['thinkingLevel'])
         : 'LOW',

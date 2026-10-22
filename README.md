@@ -77,15 +77,15 @@ Band animates old → new ◀── plan + diff
 | | |
 | --- | --- |
 | Provider | Google Gemini API (`@google/genai` SDK), called only from the server |
-| Models | `gemini-3.8-flash` first, then `gemini-3.6-flash` and `gemini-3.5-flash-lite` as fallbacks when a model is overloaded, rate-limited or returns unusable output (`GEMINI_MODEL`, `GEMINI_FALLBACK_MODELS`) |
+| Models | `gemini-3.5-flash-lite` first (fast, and the most available on the free tier), then `gemini-3.6-flash` and `gemini-3.8-flash` as fallbacks when a model is overloaded, rate-limited, slow or returns unusable output (`GEMINI_MODEL`, `GEMINI_FALLBACK_MODELS`) |
 | Plan generation | Budget weighting with reasons, contingency suggestion, trade-offs, 12–22 preparation tasks, event-day schedule, tailored vendor guidance, 4–6 personalized ideas, assumptions |
 | Revision | Interprets the change request against the current plan: new values, locks, weight changes, which sections to rewrite, a change summary and trade-offs |
 | Output control | JSON output constrained by a JSON Schema generated from the server's zod schemas. If a model rejects a request style, the next one is tried (simplified schema, full schema with a thinking level, then plain JSON with the schema in the prompt) and the rejected style is remembered. Every reply is repaired for small deviations (numbers as text, 12-hour times) and then validated with zod before the engine uses it |
-| Resilience | One retry on malformed output; overloaded models skipped for 2 minutes and rate-limited ones for 10; identical generate requests cached for 30 minutes |
+| Resilience | 40-second limit per model call; one retry on malformed output; overloaded or timed-out models skipped for 2 minutes and rate-limited ones for 10; identical generate requests cached for 30 minutes |
 
 Which model wrote a plan is shown on the plan itself and in its print/PDF version, and "See the prompt and reply" opens the exact prompt and raw JSON reply of the latest AI call.
 
-**Verified on the live deployment** (23 October 2026): real plan generation and real revisions ("keep the venue budget unchanged but reduce decoration costs" kept the venue fixed, cut decor and moved the difference to contingency with the total unchanged). During testing the free-tier `gemini-3.8-flash` and `gemini-3.6-flash` were returning "high demand" errors, so plans came from the `gemini-3.5-flash-lite` fallback.
+**Verified on the live deployment** (23 October 2026): real plan generation and real revisions ("keep the venue budget unchanged but reduce decoration costs" kept the venue fixed, cut decor and moved the difference to contingency with the total unchanged). During testing the free-tier `gemini-3.8-flash` was often overloaded or slow, so `gemini-3.5-flash-lite` is now the first choice and the larger models are fallbacks.
 
 If the server has no API key in development, it uses **sample data**: fixed placeholder content that is clearly labelled in the header and on the plan and is never presented as AI output. Production never falls back to sample data silently; it reports that AI is not configured.
 
@@ -141,10 +141,10 @@ For development with hot reload: `npm run dev` (API on 8080, UI on 5173). Withou
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | none | Gemini API key (server only) |
-| `GEMINI_MODEL` | `gemini-3.8-flash` | Primary model |
-| `GEMINI_FALLBACK_MODELS` | `gemini-3.6-flash,gemini-3.5-flash-lite` | Comma-separated models tried in order when the primary is overloaded, rate-limited or unavailable |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | Primary model |
+| `GEMINI_FALLBACK_MODELS` | `gemini-3.6-flash,gemini-3.8-flash` | Comma-separated models tried in order when the primary is overloaded, rate-limited or unavailable |
 | `GEMINI_THINKING_LEVEL` | `LOW` | `MINIMAL`, `LOW`, `MEDIUM`, `HIGH` or `OFF` |
-| `GEMINI_TIMEOUT_MS` | `60000` | Per-call timeout |
+| `GEMINI_TIMEOUT_MS` | `40000` | Per-call timeout |
 | `AI_PROVIDER` | auto | `sample` forces labelled sample data |
 | `RATE_LIMIT_MAX_AI` / `RATE_LIMIT_WINDOW_MS` | `12` / `900000` | AI requests allowed per IP per window |
 | `PORT` | `8080` | HTTP port |

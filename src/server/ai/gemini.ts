@@ -40,7 +40,7 @@ type Schema<T> = z.ZodType<T>;
 const CALL_MODES = ['schema-simple', 'schema', 'json'] as const;
 type CallMode = (typeof CALL_MODES)[number];
 const BAD_MODE_TTL_MS = 60 * 60_000;
-/** After an overload (HTTP 503), a model is skipped for this long. */
+/** After an overload or a timeout (HTTP 503/504), a model is skipped for this long. */
 export const OVERLOAD_COOLDOWN_MS = 2 * 60_000;
 
 export interface GeminiClient {
@@ -147,7 +147,9 @@ export class GeminiProvider implements AiProvider {
           });
           lastError = mapped;
           if (mapped.kind === 'rate_limited') this.cooldownUntil.set(model, this.now() + RATE_LIMIT_COOLDOWN_MS);
-          if (mapped.diagnostics?.status === 503) this.cooldownUntil.set(model, this.now() + OVERLOAD_COOLDOWN_MS);
+          if (mapped.diagnostics?.status === 503 || mapped.diagnostics?.status === 504 || mapped.kind === 'timeout') {
+            this.cooldownUntil.set(model, this.now() + OVERLOAD_COOLDOWN_MS);
+          }
           if (mapped.diagnostics?.badRequest) {
             this.badModeUntil.set(`${model}:${mode}`, this.now() + BAD_MODE_TTL_MS);
             modeIndex += 1;
