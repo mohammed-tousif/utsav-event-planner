@@ -30,12 +30,14 @@ export const RATE_LIMIT_COOLDOWN_MS = 10 * 60_000;
 type Schema<T> = z.ZodType<T>;
 
 /**
- * Request styles, tried in order: Gemini structured output with the full
- * schema and a thinking level; structured output with a simplified schema and
- * the model's default thinking; plain JSON output with the schema in the prompt. A style the API rejects (HTTP 400)
+ * Request styles, tried in order: Gemini structured output with a simplified
+ * schema (no size limits or descriptions) and the model's default thinking;
+ * structured output with the full schema and a thinking level; plain JSON
+ * output with the full schema in the prompt. Every style is validated against
+ * the full zod schema afterwards. A style the API rejects (HTTP 400)
  * for a model is remembered and skipped for an hour.
  */
-const CALL_MODES = ['schema', 'schema-simple', 'json'] as const;
+const CALL_MODES = ['schema-simple', 'schema', 'json'] as const;
 type CallMode = (typeof CALL_MODES)[number];
 const BAD_MODE_TTL_MS = 60 * 60_000;
 /** After an overload (HTTP 503), a model is skipped for this long. */

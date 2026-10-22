@@ -259,7 +259,6 @@ export function Intake({ initialType, today, status, onPlan }: IntakeProps) {
       <Generating
         eventType={draft.eventType || 'wedding'}
         sample={status?.ai.sampleData ?? false}
-        model={status?.ai.model}
         onCancel={() => pending.abort()}
       />
     );
@@ -512,7 +511,7 @@ export function Intake({ initialType, today, status, onPlan }: IntakeProps) {
               <p className="review-note">
                 {status?.ai.sampleData
                   ? 'This server has no AI key, so the plan will use fixed sample content, clearly labelled.'
-                  : `Your answers are sent to Google Gemini${status?.ai.model ? ` (${status.ai.model})` : ''} to draft the plan. Avoid personal details you would not want shared.`}
+                  : 'Your answers are sent to Google Gemini to draft the plan. Avoid personal details you would not want shared.'}
               </p>
             </>
           )}

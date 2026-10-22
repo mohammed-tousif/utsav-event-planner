@@ -100,10 +100,10 @@ describe('GeminiProvider', () => {
     const result = await provider.generatePlan(input, TODAY);
     expect(result.model).toBe('primary-model');
     const calls = client.generate.mock.calls;
-    expect(calls[0]![2].responseJsonSchema).toBeDefined();
-    expect(calls[0]![2].thinkingConfig).toBeDefined();
-    expect(JSON.stringify(calls[1]![2].responseJsonSchema)).not.toContain('maxItems');
-    expect(calls[1]![2].thinkingConfig).toBeUndefined();
+    expect(JSON.stringify(calls[0]![2].responseJsonSchema)).not.toContain('maxItems');
+    expect(calls[0]![2].thinkingConfig).toBeUndefined();
+    expect(JSON.stringify(calls[1]![2].responseJsonSchema)).toContain('maxItems');
+    expect(calls[1]![2].thinkingConfig).toBeDefined();
     expect(calls[2]![2].responseJsonSchema).toBeUndefined();
     expect(calls[2]![1]).toContain('matches this JSON Schema');
     // The next request goes straight to the style that worked.

@@ -90,7 +90,7 @@ export function App() {
             {status.ai.sampleData
               ? 'Sample data mode: no AI connected'
               : status.ai.configured
-                ? `Plans by Google Gemini (${status.ai.model})`
+                ? 'Plans drafted by Google Gemini'
                 : 'AI not configured on this server'}
           </p>
         )}

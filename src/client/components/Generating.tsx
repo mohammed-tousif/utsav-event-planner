@@ -4,7 +4,6 @@ import { EVENT_TYPE_LABELS, type EventType } from '../../shared/constants';
 interface GeneratingProps {
   eventType: EventType;
   sample: boolean;
-  model?: string;
   onCancel: () => void;
 }
 
@@ -12,7 +11,7 @@ interface GeneratingProps {
  * Honest waiting state: an elapsed-time counter and what is happening,
  * without pretending to know which part of the plan is being written.
  */
-export function Generating({ eventType, sample, model, onCancel }: GeneratingProps) {
+export function Generating({ eventType, sample, onCancel }: GeneratingProps) {
   const [seconds, setSeconds] = useState(0);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -36,7 +35,7 @@ export function Generating({ eventType, sample, model, onCancel }: GeneratingPro
       <p role="status">
         {sample
           ? 'Loading sample content.'
-          : `Google Gemini${model ? ` (${model})` : ''} is writing the budget split, timeline, vendor checklist and ideas. The app then checks every number.`}
+          : 'Google Gemini is writing the budget split, timeline, vendor checklist and ideas. The app then checks every number.'}
       </p>
       <p className="elapsed">
         {seconds < 45 ? 'This usually takes 15 to 45 seconds.' : 'Still working. Large plans can take up to two minutes.'}{' '}
