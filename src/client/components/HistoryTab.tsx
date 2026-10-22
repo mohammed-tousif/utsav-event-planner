@@ -1,15 +1,26 @@
 import { formatMoney } from '../../shared/money';
 import type { Plan } from '../../shared/schemas';
+import { AiExchangePanel } from './AiExchangePanel';
 
 const SECTION = { tasks: 'tasks', schedule: 'event-day schedule', vendors: 'vendor guidance', ideas: 'ideas' } as const;
 const when = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 
-export function HistoryTab({ plan }: { plan: Plan }) {
+export function HistoryTab({ plan, exchangeOpen }: { plan: Plan; exchangeOpen: boolean }) {
+  const exchange = plan.meta.exchange ? (
+    <AiExchangePanel exchange={plan.meta.exchange} sample={plan.meta.source === 'sample'} open={exchangeOpen} />
+  ) : null;
   if (plan.revisions.length === 0) {
-    return <p className="empty">No changes yet. Changes you make appear here with what moved and why.</p>;
+    return (
+      <>
+        {exchange}
+        <p className="empty">No changes yet. Changes you make appear here with what moved and why.</p>
+      </>
+    );
   }
   const currency = plan.input.currency;
   return (
+    <>
+    {exchange}
     <ol className="history" role="list">
       {plan.revisions.map((entry) => {
         const moved = entry.diff.lines.filter((l) => l.before !== l.after);
@@ -43,5 +54,6 @@ export function HistoryTab({ plan }: { plan: Plan }) {
         );
       })}
     </ol>
+    </>
   );
 }

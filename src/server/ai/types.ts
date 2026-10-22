@@ -26,6 +26,8 @@ export interface AiResult<T> {
   data: T;
   /** Which model actually produced the answer (after any fallback). */
   model: string;
+  /** The prompt that was sent and the model's raw reply, shown to the user for transparency. */
+  exchange: { prompt: string; reply: string };
 }
 
 export interface AiProvider {

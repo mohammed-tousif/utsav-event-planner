@@ -333,11 +333,22 @@ export const RevisionEntrySchema = z.object({
 });
 export type RevisionEntry = z.infer<typeof RevisionEntrySchema>;
 
+export const AiExchangeSchema = z.object({
+  kind: z.enum(['plan', 'revision']),
+  model: z.string(),
+  at: z.string(),
+  prompt: z.string().max(24_000),
+  reply: z.string().max(60_000),
+});
+export type AiExchange = z.infer<typeof AiExchangeSchema>;
+
 export const PlanMetaSchema = z.object({
   source: z.enum(['ai', 'sample']),
   provider: z.string(),
   model: z.string(),
   generatedAt: z.string(),
+  /** The latest prompt sent to the AI and its raw reply, kept for transparency. */
+  exchange: AiExchangeSchema.optional(),
 });
 export type PlanMeta = z.infer<typeof PlanMetaSchema>;
 

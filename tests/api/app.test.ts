@@ -44,6 +44,9 @@ describe('POST /api/plans', () => {
     expect(plan.timeline.tasks.length).toBeGreaterThan(0);
     expect(plan.vendors.length).toBeGreaterThan(0);
     expect(plan.ideas.length).toBeGreaterThan(0);
+    expect(plan.meta.exchange).toMatchObject({ kind: 'plan', model: 'sample-data' });
+    expect(plan.meta.exchange.prompt).toContain('Hubballi');
+    expect(JSON.parse(plan.meta.exchange.reply).tasks.length).toBeGreaterThan(0);
   });
 
   it('returns field errors for invalid input', async () => {
@@ -142,6 +145,8 @@ describe('POST /api/plans/revise', () => {
     expect(res.body.plan.budget.total).toBe(1_200_000);
     expect(res.body.diff).toMatchObject({ totalBefore: 1_500_000, totalAfter: 1_200_000 });
     expect(res.body.plan.revisions).toHaveLength(1);
+    expect(res.body.plan.meta.exchange).toMatchObject({ kind: 'revision' });
+    expect(res.body.plan.meta.exchange.prompt).toContain('Reduce the budget by 20%');
   });
 
   it('explains when a request changes nothing', async () => {

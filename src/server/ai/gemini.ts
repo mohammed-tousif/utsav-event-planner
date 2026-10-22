@@ -130,9 +130,9 @@ export class GeminiProvider implements AiProvider {
         const mode = modes[modeIndex]!;
         const started = Date.now();
         try {
-          const data = await this.once(model, mode, systemInstruction, prompt, jsonSchema, schema, signal, temperature);
+          const { data, contents, reply } = await this.once(model, mode, systemInstruction, prompt, jsonSchema, schema, signal, temperature);
           this.logger.log('info', 'ai_call', { task, model, mode, ms: Date.now() - started, ok: true });
-          return { data, model };
+          return { data, model, exchange: { prompt: contents, reply } };
         } catch (error) {
           const mapped = this.mapError(error, signal);
           this.logger.log('warn', 'ai_call', {
@@ -176,7 +176,7 @@ export class GeminiProvider implements AiProvider {
     schema: Schema<T>,
     signal: AbortSignal | undefined,
     temperature: number,
-  ): Promise<T> {
+  ): Promise<{ data: T; contents: string; reply: string }> {
     const timeout = AbortSignal.timeout(this.config.timeoutMs);
     const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
     const shared: GenerateContentConfig = {
@@ -218,7 +218,7 @@ export class GeminiProvider implements AiProvider {
         reason: `schema mismatch at ${first?.path.join('.') || 'root'}: ${first?.message ?? ''}`.slice(0, 200),
       });
     }
-    return parsed.data;
+    return { data: parsed.data, contents, reply: result.text };
   }
 
   private mapError(error: unknown, signal: AbortSignal | undefined): AiError {

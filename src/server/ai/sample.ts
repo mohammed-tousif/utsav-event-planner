@@ -2,6 +2,7 @@ import { categoriesFor, type CategoryKey } from '../../shared/constants';
 import type { AiPlanDraft, AiRevision, EventInput, Plan } from '../../shared/schemas';
 import { parseIntent } from '../../shared/revision';
 import { vendorTemplatesFor } from '../../shared/vendorCatalog';
+import { planPrompt, revisePrompt } from './prompts';
 import type { AiProvider, AiResult } from './types';
 
 /**
@@ -145,11 +146,13 @@ export class SampleProvider implements AiProvider {
   readonly model = 'sample-data';
   readonly configured = true;
 
-  async generatePlan(input: EventInput): Promise<AiResult<AiPlanDraft>> {
-    return { data: sampleDraft(input), model: this.model };
+  async generatePlan(input: EventInput, today: string): Promise<AiResult<AiPlanDraft>> {
+    const data = sampleDraft(input);
+    return { data, model: this.model, exchange: { prompt: `Sample data, no AI call.\n\n${planPrompt(input, today)}`, reply: JSON.stringify(data) } };
   }
 
-  async revisePlan(plan: Plan, request: string): Promise<AiResult<AiRevision>> {
-    return { data: sampleRevision(plan, request), model: this.model };
+  async revisePlan(plan: Plan, request: string, today: string): Promise<AiResult<AiRevision>> {
+    const data = sampleRevision(plan, request);
+    return { data, model: this.model, exchange: { prompt: `Sample data, no AI call.\n\n${revisePrompt(plan, request, today)}`, reply: JSON.stringify(data) } };
   }
 }

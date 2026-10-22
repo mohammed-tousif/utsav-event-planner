@@ -1829,3 +1829,60 @@ button.step-link {
     color: #444;
   }
 }
+
+/* AI exchange transparency panel */
+.exchange {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+
+.exchange summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--peacock);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.exchange > p {
+  margin-block: var(--space-2) var(--space-3);
+  font-size: var(--step--1);
+}
+
+.exchange-grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 72rem) {
+  .exchange-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.exchange h4 {
+  margin-bottom: var(--space-1);
+}
+
+.exchange pre {
+  margin: 0;
+  max-height: 22rem;
+  overflow: auto;
+  padding: var(--space-3);
+  border-radius: var(--radius-s);
+  background: var(--paper);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.provenance .link {
+  font-size: inherit;
+  font-weight: 600;
+}

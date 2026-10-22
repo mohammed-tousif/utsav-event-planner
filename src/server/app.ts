@@ -10,7 +10,7 @@ import { BudgetInfeasibleError } from '../shared/budget';
 import { daysBetween, todayISO } from '../shared/dates';
 import { assemblePlan } from '../shared/plan';
 import { applyRevision, RevisionError } from '../shared/revision';
-import { GenerateRequestSchema, ReviseRequestSchema, type Plan } from '../shared/schemas';
+import { GenerateRequestSchema, ReviseRequestSchema, type AiExchange, type Plan } from '../shared/schemas';
 import { checkEventDate, DateRangeError } from '../shared/timeline';
 import { AiError, type AiErrorKind, type AiProvider } from './ai/types';
 import { hashKey, TtlCache } from './cache';
@@ -84,6 +84,10 @@ function mapDomainError(error: unknown): never {
     throw new HttpError(status, code, error.message, undefined, error.retryAfterSeconds);
   }
   throw error;
+}
+
+function exchangeOf(kind: AiExchange['kind'], model: string, at: string, exchange: { prompt: string; reply: string }): AiExchange {
+  return { kind, model, at, prompt: exchange.prompt.slice(0, 24_000), reply: exchange.reply.slice(0, 60_000) };
 }
 
 export interface AppDeps {
@@ -185,6 +189,7 @@ export function createApp({ config, provider, logger, now = () => new Date(), st
         try {
           checkEventDate(input.eventDate, today);
           const result = await provider.generatePlan(input, today, controller.signal);
+          const generatedAt = now().toISOString();
           return assemblePlan(
             input,
             result.data,
@@ -192,7 +197,8 @@ export function createApp({ config, provider, logger, now = () => new Date(), st
               source: provider.name === 'sample' ? 'sample' : 'ai',
               provider: provider.name === 'sample' ? 'Sample data' : 'Google Gemini',
               model: result.model,
-              generatedAt: now().toISOString(),
+              generatedAt,
+              exchange: exchangeOf('plan', result.model, generatedAt, result.exchange),
             },
             today,
           );
@@ -220,7 +226,11 @@ export function createApp({ config, provider, logger, now = () => new Date(), st
         try {
           const ai = await provider.revisePlan(plan, request, today, controller.signal);
           const applied = applyRevision(plan, ai.data, request, today);
-          applied.plan.meta = { ...applied.plan.meta, model: ai.model };
+          applied.plan.meta = {
+            ...applied.plan.meta,
+            model: ai.model,
+            exchange: exchangeOf('revision', ai.model, now().toISOString(), ai.exchange),
+          };
           return applied;
         } catch (error) {
           return mapDomainError(error);

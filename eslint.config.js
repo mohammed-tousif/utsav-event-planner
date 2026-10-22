@@ -30,6 +30,8 @@ export default tseslint.config(
       ...jsxA11y.flatConfigs.strict.rules,
       // role="list" is kept on styled lists so Safari still announces them.
       'jsx-a11y/no-redundant-roles': ['error', { ul: ['list'], ol: ['list'] }],
+      // Scrollable <pre> blocks must be reachable by keyboard.
+      'jsx-a11y/no-noninteractive-tabindex': ['error', { tags: ['pre'], roles: ['tabpanel'] }],
       'react/no-danger': 'off',
       'no-restricted-syntax': [
         'error',

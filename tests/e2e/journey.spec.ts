@@ -42,6 +42,8 @@ test('plans a wedding, revises it and keeps progress after reload', async ({ pag
   await expect(page.locator('.vendor select').first()).toHaveValue('booked');
   await page.getByRole('tab', { name: /Changes/ }).click();
   await expect(page.locator('.history-entry')).toHaveCount(3);
+  await page.getByText('Sample data: the prompt that would be sent, and the fixed reply').click();
+  await expect(page.locator('.exchange pre').first()).toContainText('Reduce the budget by 20%');
 
   // Home lists the saved plan.
   await page.getByRole('link', { name: 'Utsav home' }).click();

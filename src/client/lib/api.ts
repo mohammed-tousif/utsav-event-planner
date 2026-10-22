@@ -71,7 +71,8 @@ export function generatePlan(input: EventInput, signal?: AbortSignal): Promise<G
 export function revisePlan(plan: Plan, change: string, signal?: AbortSignal): Promise<ReviseResponse> {
   return request<ReviseResponse>('/api/plans/revise', {
     method: 'POST',
-    body: JSON.stringify({ plan, request: change, clientToday: clientToday() }),
+    // The previous AI exchange is only for display, so it is not sent back.
+    body: JSON.stringify({ plan: { ...plan, meta: { ...plan.meta, exchange: undefined } }, request: change, clientToday: clientToday() }),
     signal,
   });
 }

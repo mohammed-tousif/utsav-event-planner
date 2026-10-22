@@ -68,6 +68,7 @@ Band animates old → new ◀── plan + diff
 - Vendor checklist with status tracking, your own quotes checked against the budget, notes
 - Ideas with "why it fits", estimated cost, budget fit and effort
 - Natural-language revisions with suggestions, cancel, and a change history
+- Transparency: the exact prompt sent to Gemini and its raw structured reply for the latest plan or change, one click from the plan header
 - Saved automatically in the browser; export as a plan file (re-importable), a calendar file (.ics) or print/PDF
 - Light and dark themes, keyboard support, reduced-motion support, mobile layout
 
@@ -82,7 +83,7 @@ Band animates old → new ◀── plan + diff
 | Output control | JSON output constrained by a JSON Schema generated from the server's zod schemas. If a model rejects a request style, the next one is tried (simplified schema, full schema with a thinking level, then plain JSON with the schema in the prompt) and the rejected style is remembered. Every reply is repaired for small deviations (numbers as text, 12-hour times) and then validated with zod before the engine uses it |
 | Resilience | One retry on malformed output; overloaded models skipped for 2 minutes and rate-limited ones for 10; identical generate requests cached for 30 minutes |
 
-Which model wrote a plan is shown on the plan itself and in its print/PDF version.
+Which model wrote a plan is shown on the plan itself and in its print/PDF version, and "See the prompt and reply" opens the exact prompt and raw JSON reply of the latest AI call.
 
 **Verified on the live deployment** (23 October 2026): real plan generation and real revisions ("keep the venue budget unchanged but reduce decoration costs" kept the venue fixed, cut decor and moved the difference to contingency with the total unchanged). During testing the free-tier `gemini-3.8-flash` and `gemini-3.6-flash` were returning "high demand" errors, so plans came from the `gemini-3.5-flash-lite` fallback.
 

@@ -42,6 +42,7 @@ function describeDiff(diff: PlanDiff, plan: Plan): string {
 
 export function PlanView({ plan, today, saveState, onChange }: PlanViewProps) {
   const [tab, setTab] = useState<TabKey>('budget');
+  const [exchangeOpen, setExchangeOpen] = useState(false);
   const [diff, setDiff] = useState<PlanDiff | null>(null);
   const [diffKey, setDiffKey] = useState(0);
   const [focusKey, setFocusKey] = useState<string | null>(null);
@@ -156,7 +157,19 @@ export function PlanView({ plan, today, saveState, onChange }: PlanViewProps) {
           <p className="provenance" data-sample={sample || undefined}>
             {sample
               ? 'Sample data: this plan was filled with fixed placeholder content, not AI.'
-              : `Drafted by ${plan.meta.provider} (${plan.meta.model}). Amounts are calculated by the app. All costs are estimates.`}
+              : `Drafted by ${plan.meta.provider} (${plan.meta.model}). Amounts are calculated by the app. All costs are estimates.`}{' '}
+            {plan.meta.exchange && (
+              <button
+                type="button"
+                className="link"
+                onClick={() => {
+                  setExchangeOpen(true);
+                  setTab('history');
+                }}
+              >
+                See the prompt and reply
+              </button>
+            )}
           </p>
           {plan.summary && <p className="plan-summary">{plan.summary}</p>}
         </header>
@@ -203,7 +216,7 @@ export function PlanView({ plan, today, saveState, onChange }: PlanViewProps) {
                   {key === 'timeline' && <TimelineTab plan={plan} today={today} onToggleTask={toggleTask} />}
                   {key === 'vendors' && <VendorsTab plan={plan} today={today} onUpdate={updateVendor} />}
                   {key === 'ideas' && <IdeasTab plan={plan} changed={Boolean(diff?.regenerated.includes('ideas'))} />}
-                  {key === 'history' && <HistoryTab plan={plan} />}
+                  {key === 'history' && <HistoryTab plan={plan} exchangeOpen={exchangeOpen} />}
                 </div>
               )}
             </Tabs>
