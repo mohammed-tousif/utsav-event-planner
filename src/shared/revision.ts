@@ -396,11 +396,13 @@ export function applyManualChange(plan: Plan, change: ManualChange, today: strin
 
   const locked = lockedAmounts(plan.budget.lines);
   if (change.lock) {
-    if (change.lock.locked) {
-      const line = plan.budget.lines.find((l) => l.key === change.lock?.key);
-      if (line) locked[line.key] = line.amount;
-    } else {
-      delete locked[change.lock.key];
+    const line = plan.budget.lines.find((l) => l.key === change.lock?.key);
+    if (line && change.lock.locked && !line.locked) {
+      locked[line.key] = line.amount;
+      notes.push(`${line.label} kept fixed at ${formatMoney(line.amount, input.currency)}.`);
+    } else if (line && !change.lock.locked && line.locked) {
+      delete locked[line.key];
+      notes.push(`${line.label} will be recalculated with the rest of the budget.`);
     }
   }
   const contingencyPct =

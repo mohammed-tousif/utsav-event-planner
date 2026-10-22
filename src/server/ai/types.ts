@@ -14,6 +14,8 @@ export class AiError extends Error {
     public readonly kind: AiErrorKind,
     message: string,
     public readonly retryAfterSeconds?: number,
+    /** Diagnostics for server logs only (HTTP status and a redacted reason). Never sent to users. */
+    public readonly diagnostics?: { status?: number; reason?: string; badRequest?: boolean },
   ) {
     super(message);
     this.name = 'AiError';

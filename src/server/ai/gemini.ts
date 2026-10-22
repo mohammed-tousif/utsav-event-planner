@@ -4,6 +4,7 @@ import { AiPlanDraftSchema, AiRevisionSchema, type EventInput, type Plan } from 
 import type { ServerConfig } from '../config';
 import type { Logger } from '../logger';
 import { toGeminiSchema } from './jsonSchema';
+import { normalizeModelJson } from './normalize';
 import { PLAN_SYSTEM, REVISE_SYSTEM, planPrompt, revisePrompt } from './prompts';
 import { AiError, type AiProvider, type AiResult } from './types';
 
@@ -22,8 +23,14 @@ const REVISION_DESCRIPTIONS: Record<string, string> = {
   'adjustments[].factor': 'Multiplier relative to the current plan, 0.5 to 1.6.',
 };
 
+/** After a quota error, a model is skipped for this long. */
+export const RATE_LIMIT_COOLDOWN_MS = 10 * 60_000;
+
 /** Content that every model reply must pass before the app uses it. */
 type Schema<T> = z.ZodType<T>;
+
+/** "schema" uses Gemini's structured output; "json" is the compatibility fallback. */
+type CallMode = 'schema' | 'json';
 
 export interface GeminiClient {
   generate(model: string, contents: string, config: GenerateContentConfig): Promise<{ text: string | undefined; blockReason?: string; finishReason?: string }>;
@@ -57,6 +64,7 @@ export class GeminiProvider implements AiProvider {
   readonly name = 'gemini' as const;
   readonly model: string;
   readonly configured: boolean;
+  private readonly cooldownUntil = new Map<string, number>();
   private readonly planSchema = toGeminiSchema(AiPlanDraftSchema, PLAN_DESCRIPTIONS);
   private readonly revisionSchema = toGeminiSchema(AiRevisionSchema, REVISION_DESCRIPTIONS);
 
@@ -64,6 +72,7 @@ export class GeminiProvider implements AiProvider {
     private readonly config: ServerConfig['gemini'],
     private readonly logger: Logger,
     private readonly client: GeminiClient | null = config.apiKey ? createGoogleClient(config.apiKey) : null,
+    private readonly now: () => number = Date.now,
   ) {
     this.model = config.model;
     this.configured = Boolean(client);
@@ -78,9 +87,13 @@ export class GeminiProvider implements AiProvider {
   }
 
   /**
-   * One structured call with a bounded recovery path: a malformed reply is
-   * retried once; a quota or availability error on the primary model falls
-   * back once to the lighter model. Nothing else is retried.
+   * One structured call with a bounded recovery path:
+   * - a malformed reply is retried once on the same model;
+   * - if the API rejects the request itself (HTTP 400), it is retried once in
+   *   compatibility mode: plain JSON output with the schema in the prompt and
+   *   default thinking settings;
+   * - quota, availability and output errors move on to the next fallback model.
+   * Every reply is validated with zod before it is used.
    */
   private async call<T>(
     task: 'plan' | 'revise',
@@ -92,25 +105,44 @@ export class GeminiProvider implements AiProvider {
     temperature: number,
   ): Promise<AiResult<T>> {
     if (!this.client) throw new AiError('not_configured', 'The AI planner is not configured on this server yet.');
-    const models = [this.config.model, this.config.fallbackModel].filter((m, i, all) => m && all.indexOf(m) === i);
+    const configured = [this.config.model, ...this.config.fallbackModels].filter((m, i, all) => m && all.indexOf(m) === i);
+    // Skip a model that recently hit its quota, unless every model has.
+    const ready = configured.filter((m) => (this.cooldownUntil.get(m) ?? 0) <= this.now());
+    const models = ready.length ? ready : configured;
     let lastError: AiError | undefined;
 
     for (const [modelIndex, model] of models.entries()) {
-      for (let attempt = 0; attempt < 2; attempt += 1) {
+      let mode: CallMode = 'schema';
+      for (let attempt = 0; attempt < 3; attempt += 1) {
         const started = Date.now();
         try {
-          const data = await this.once(model, systemInstruction, prompt, jsonSchema, schema, signal, temperature);
-          this.logger.log('info', 'ai_call', { task, model, attempt, ms: Date.now() - started, ok: true });
+          const data = await this.once(model, mode, systemInstruction, prompt, jsonSchema, schema, signal, temperature);
+          this.logger.log('info', 'ai_call', { task, model, mode, attempt, ms: Date.now() - started, ok: true });
           return { data, model };
         } catch (error) {
           const mapped = this.mapError(error, signal);
-          this.logger.log('warn', 'ai_call', { task, model, attempt, ms: Date.now() - started, ok: false, kind: mapped.kind });
+          this.logger.log('warn', 'ai_call', {
+            task,
+            model,
+            mode,
+            attempt,
+            ms: Date.now() - started,
+            ok: false,
+            kind: mapped.kind,
+            status: mapped.diagnostics?.status,
+            reason: mapped.diagnostics?.reason,
+          });
           lastError = mapped;
-          if (mapped.kind === 'invalid_output' && attempt === 0) continue; // retry the same model once
+          if (mapped.kind === 'rate_limited') this.cooldownUntil.set(model, this.now() + RATE_LIMIT_COOLDOWN_MS);
+          if (mapped.diagnostics?.badRequest && mode === 'schema') {
+            mode = 'json';
+            continue;
+          }
+          if (mapped.kind === 'invalid_output' && !mapped.diagnostics?.badRequest && attempt === 0) continue;
           break;
         }
       }
-      const canFallBack = lastError && ['rate_limited', 'unavailable', 'invalid_output'].includes(lastError.kind);
+      const canFallBack = lastError && ['rate_limited', 'unavailable', 'invalid_output', 'timeout'].includes(lastError.kind) && !signal?.aborted;
       if (!canFallBack || modelIndex === models.length - 1) break;
     }
     throw lastError ?? new AiError('unavailable', 'The AI planner did not respond.');
@@ -118,6 +150,7 @@ export class GeminiProvider implements AiProvider {
 
   private async once<T>(
     model: string,
+    mode: CallMode,
     systemInstruction: string,
     prompt: string,
     jsonSchema: unknown,
@@ -127,31 +160,43 @@ export class GeminiProvider implements AiProvider {
   ): Promise<T> {
     const timeout = AbortSignal.timeout(this.config.timeoutMs);
     const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
-    const result = await this.client!.generate(model, prompt, {
+    const shared: GenerateContentConfig = {
       systemInstruction,
       temperature,
-      maxOutputTokens: 12_000,
+      maxOutputTokens: 16_000,
       responseMimeType: 'application/json',
-      responseJsonSchema: jsonSchema,
-      thinkingConfig: mapThinking(this.config.thinkingLevel),
       abortSignal: combined,
       httpOptions: { timeout: this.config.timeoutMs },
-    });
+    };
+    const config: GenerateContentConfig =
+      mode === 'schema'
+        ? { ...shared, responseJsonSchema: jsonSchema, thinkingConfig: mapThinking(this.config.thinkingLevel) }
+        : shared;
+    const contents =
+      mode === 'schema' ? prompt : `${prompt}\n\nReturn only a JSON object that matches this JSON Schema exactly:\n${JSON.stringify(jsonSchema)}`;
+    const result = await this.client!.generate(model, contents, config);
     if (result.blockReason) throw new AiError('blocked', 'The AI declined this request. Rephrase it and try again.');
     if (!result.text) {
       throw new AiError(
         'invalid_output',
         result.finishReason === 'MAX_TOKENS' ? 'The AI reply was cut off.' : 'The AI returned an empty reply.',
+        undefined,
+        { reason: `empty reply, finishReason=${result.finishReason ?? 'none'}` },
       );
     }
     let json: unknown;
     try {
       json = parseJson(result.text);
     } catch {
-      throw new AiError('invalid_output', 'The AI reply was not valid JSON.');
+      throw new AiError('invalid_output', 'The AI reply was not valid JSON.', undefined, { reason: `unparseable JSON (${result.text.length} chars)` });
     }
-    const parsed = schema.safeParse(json);
-    if (!parsed.success) throw new AiError('invalid_output', 'The AI reply did not match the expected plan structure.');
+    const parsed = schema.safeParse(normalizeModelJson(json));
+    if (!parsed.success) {
+      const first = parsed.error.issues[0];
+      throw new AiError('invalid_output', 'The AI reply did not match the expected plan structure.', undefined, {
+        reason: `schema mismatch at ${first?.path.join('.') || 'root'}: ${first?.message ?? ''}`.slice(0, 200),
+      });
+    }
     return parsed.data;
   }
 
@@ -159,16 +204,30 @@ export class GeminiProvider implements AiProvider {
     if (error instanceof AiError) return error;
     if (signal?.aborted) return new AiError('timeout', 'The request was cancelled.');
     if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError' || /timed? ?out|aborted/i.test(error.message))) {
-      return new AiError('timeout', 'The AI took too long to answer. Try again.');
+      return new AiError('timeout', 'The AI took too long to answer. Try again.', undefined, { reason: error.name });
     }
     if (error instanceof ApiError) {
-      if (error.status === 429) return new AiError('rate_limited', 'The AI is busy or the free quota is used up. Wait a minute and try again.', 60);
-      if (error.status === 400 && /api key/i.test(error.message)) return new AiError('not_configured', 'The AI key on the server is not valid.');
-      if (error.status === 401 || error.status === 403) return new AiError('not_configured', 'The AI key on the server is not valid.');
-      if (error.status === 404) return new AiError('unavailable', 'The configured AI model is not available.');
-      if (error.status >= 500) return new AiError('unavailable', 'The AI service is having problems. Try again shortly.');
-      return new AiError('invalid_output', 'The AI could not process this request.');
+      const diagnostics = { status: error.status, reason: redact(error.message) };
+      if (error.status === 429) {
+        return new AiError('rate_limited', 'The AI is busy or the free quota is used up. Wait a minute and try again.', 60, diagnostics);
+      }
+      if ((error.status === 400 && /api[ _-]?key/i.test(error.message)) || error.status === 401 || error.status === 403) {
+        return new AiError('not_configured', 'The AI key on the server is not valid.', undefined, diagnostics);
+      }
+      if (error.status === 404) return new AiError('unavailable', 'The configured AI model is not available.', undefined, diagnostics);
+      if (error.status >= 500) return new AiError('unavailable', 'The AI service is having problems. Try again shortly.', undefined, diagnostics);
+      return new AiError('invalid_output', 'The AI could not process this request.', undefined, { ...diagnostics, badRequest: true });
     }
-    return new AiError('unavailable', 'Could not reach the AI service.');
+    const reason = error instanceof Error ? redact(`${error.name}: ${error.message}`) : 'unknown error';
+    return new AiError('unavailable', 'Could not reach the AI service.', undefined, { reason });
   }
+}
+
+/** Keeps provider error text short and free of anything that looks like a key. */
+export function redact(message: string): string {
+  return message
+    .replace(/AIza[0-9A-Za-z_-]{20,}/g, '[redacted]')
+    .replace(/key=[^&\s]+/gi, 'key=[redacted]')
+    .replace(/\s+/g, ' ')
+    .slice(0, 240);
 }

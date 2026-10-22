@@ -164,7 +164,17 @@ export function PlanView({ plan, today, saveState, onChange }: PlanViewProps) {
         <BudgetBand key={`${plan.id}-${diffKey}`} budget={plan.budget} diff={diff} focusKey={focusKey} />
 
         <p className="jump-to-change">
-          <a href="#revise-title">Change the plan</a>
+          <button
+            type="button"
+            className="link"
+            onClick={() => {
+              const field = document.getElementById('revise-request');
+              field?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              field?.focus({ preventScroll: true });
+            }}
+          >
+            Change the plan
+          </button>
         </p>
 
         {!saveState.ok && (

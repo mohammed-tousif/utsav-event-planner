@@ -90,7 +90,8 @@ export function buildVendors(
   const previousByKey = new Map(previous.map((v) => [v.key, v] as const));
 
   return templates.map((template, index): Vendor => {
-    const ai = byKey.get(template.key);
+    const found = byKey.get(template.key);
+    const ai = found && found.why ? found : undefined;
     const kept = previousByKey.get(template.key);
     const leadDays = fitted[index] ?? 0;
     return {

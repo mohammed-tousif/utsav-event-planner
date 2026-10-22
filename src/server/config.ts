@@ -7,7 +7,8 @@ export interface ServerConfig {
   gemini: {
     apiKey: string;
     model: string;
-    fallbackModel: string;
+    /** Tried in order when the primary model is rate-limited, unavailable or returns bad output. */
+    fallbackModels: string[];
     timeoutMs: number;
     thinkingLevel: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH' | 'OFF';
   };
@@ -43,7 +44,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     gemini: {
       apiKey,
       model: (env.GEMINI_MODEL ?? 'gemini-3.8-flash').trim(),
-      fallbackModel: (env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.5-flash-lite').trim(),
+      fallbackModels: (env.GEMINI_FALLBACK_MODELS ?? env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.6-flash,gemini-3.5-flash-lite')
+        .split(',')
+        .map((m) => m.trim())
+        .filter(Boolean)
+        .slice(0, 3),
       timeoutMs: int(env.GEMINI_TIMEOUT_MS, 60_000, 5_000, 120_000),
       thinkingLevel: (THINKING_LEVELS as readonly string[]).includes(level)
         ? (level as ServerConfig['gemini']['thinkingLevel'])

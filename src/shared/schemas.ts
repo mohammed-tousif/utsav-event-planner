@@ -51,8 +51,9 @@ export const isoDate = z
 const uniqueArray = <T extends z.ZodType>(item: T, max: number) =>
   z
     .array(item)
-    .max(max)
-    .transform((values) => [...new Set(values)] as z.output<T>[]);
+    .max(50)
+    .transform((values) => [...new Set(values)] as z.output<T>[])
+    .refine((values) => values.length <= max, `Choose up to ${max}.`);
 
 /* ------------------------------------------------------------------ */
 /* Event input (what the user tells us)                                 */

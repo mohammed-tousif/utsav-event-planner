@@ -35,3 +35,11 @@ export const formatTime = (time: string): string => {
   const hour = h % 12 === 0 ? 12 : h % 12;
   return `${hour}:${String(m).padStart(2, '0')} ${suffix}`;
 };
+
+export function bookByLabel(bookBy: string, today: string): { text: string; tone: 'overdue' | 'soon' | 'later' } {
+  const days = daysBetween(today, bookBy);
+  if (days < 0) return { text: `Booking deadline passed ${-days} day${days === -1 ? '' : 's'} ago`, tone: 'overdue' };
+  if (days === 0) return { text: 'Book today', tone: 'soon' };
+  if (days <= 7) return { text: `Book within ${days} day${days === 1 ? '' : 's'}`, tone: 'soon' };
+  return { text: `Book by ${formatShortDate(bookBy, true)}`, tone: 'later' };
+}

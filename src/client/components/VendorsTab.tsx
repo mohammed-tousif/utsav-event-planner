@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { formatMoney } from '../../shared/money';
 import { VENDOR_STATUSES, type Plan, type Vendor, type VendorStatus } from '../../shared/schemas';
-import { dueLabel } from '../lib/format';
+import { bookByLabel } from '../lib/format';
 
 const STATUS_LABELS: Record<VendorStatus, string> = {
   not_started: 'Not started',
@@ -41,7 +41,7 @@ function VendorRow({ vendor, plan, today, onUpdate }: { vendor: Vendor; plan: Pl
   const [quote, setQuote] = useState(vendor.quote === null ? '' : String(vendor.quote));
   const [notes, setNotes] = useState(vendor.notes);
   const line = plan.budget.lines.find((l) => l.key === vendor.budgetCategory);
-  const due = dueLabel(vendor.bookByDate, today);
+  const due = bookByLabel(vendor.bookByDate, today);
   const quoteNumber = vendor.quote;
   const over = quoteNumber !== null && line ? quoteNumber - line.amount : 0;
   const id = `vendor-${vendor.id}`;
@@ -51,7 +51,7 @@ function VendorRow({ vendor, plan, today, onUpdate }: { vendor: Vendor; plan: Pl
       <div className="vendor-head">
         <h3 className="vendor-name">{vendor.label}</h3>
         <span className="source" data-source={vendor.source}>
-          {vendor.source === 'ai' ? 'Gemini guidance' : 'Standard checklist'}
+          {vendor.source === 'ai' && plan.meta.source === 'ai' ? 'Tailored by Gemini' : 'Standard checklist'}
         </span>
       </div>
       <p className="vendor-why">{vendor.why}</p>
@@ -87,7 +87,7 @@ function VendorRow({ vendor, plan, today, onUpdate }: { vendor: Vendor; plan: Pl
         </p>
         <p className="vendor-due">
           <span className="due" data-tone={vendor.status === 'booked' ? undefined : due.tone}>
-            {vendor.status === 'booked' ? 'Booked' : `Book by ${due.text.replace(/^Due /, '').toLowerCase()}`}
+            {vendor.status === 'booked' ? 'Booked' : due.text}
           </span>
         </p>
       </div>
