@@ -56,3 +56,20 @@ function annotate(node: JsonValue, descriptions: Record<string, string>, path: s
   }
   if (node.items) annotate(node.items, descriptions, `${path}[]`);
 }
+
+const COMPLEX_KEYS = new Set(['minItems', 'maxItems', 'minimum', 'maximum', 'additionalProperties', 'description', 'title']);
+
+/** A smaller version of a schema without size limits or descriptions, for models that reject the full one. */
+export function simplifySchema(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(simplifySchema);
+  if (!node || typeof node !== 'object') return node;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(node)) {
+    if (key === 'properties' && value && typeof value === 'object') {
+      out.properties = Object.fromEntries(Object.entries(value).map(([name, schema]) => [name, simplifySchema(schema)]));
+    } else if (!COMPLEX_KEYS.has(key)) {
+      out[key] = simplifySchema(value);
+    }
+  }
+  return out;
+}

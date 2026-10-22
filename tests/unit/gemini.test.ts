@@ -93,17 +93,32 @@ describe('GeminiProvider', () => {
     await expect(new GeminiProvider(config, silentLogger, client).generatePlan(input, TODAY)).rejects.toMatchObject({ kind });
   });
 
-  it('retries a rejected request once in compatibility mode before giving up on a model', async () => {
-    const client = clientReturning(new ApiError({ message: 'Invalid JSON schema: too many states', status: 400 }), good);
-    const result = await new GeminiProvider(config, silentLogger, client).generatePlan(input, TODAY);
+  it('steps through request styles when the API rejects one, and remembers what failed', async () => {
+    const rejected = () => new ApiError({ message: 'Request contains an invalid argument.', status: 400 });
+    const client = clientReturning(rejected(), rejected(), good, good);
+    const provider = new GeminiProvider(config, silentLogger, client);
+    const result = await provider.generatePlan(input, TODAY);
     expect(result.model).toBe('primary-model');
-    const [, firstPrompt, first] = client.generate.mock.calls[0]!;
-    const [, secondPrompt, second] = client.generate.mock.calls[1]!;
-    expect(first.responseJsonSchema).toBeDefined();
-    expect(second.responseJsonSchema).toBeUndefined();
-    expect(second.thinkingConfig).toBeUndefined();
-    expect(secondPrompt.length).toBeGreaterThan(firstPrompt.length);
-    expect(secondPrompt).toContain('matches this JSON Schema');
+    const calls = client.generate.mock.calls;
+    expect(calls[0]![2].responseJsonSchema).toBeDefined();
+    expect(calls[0]![2].thinkingConfig).toBeDefined();
+    expect(JSON.stringify(calls[1]![2].responseJsonSchema)).not.toContain('maxItems');
+    expect(calls[1]![2].thinkingConfig).toBeUndefined();
+    expect(calls[2]![2].responseJsonSchema).toBeUndefined();
+    expect(calls[2]![1]).toContain('matches this JSON Schema');
+    // The next request goes straight to the style that worked.
+    await provider.generatePlan(input, TODAY);
+    expect(calls).toHaveLength(4);
+    expect(calls[3]![2].responseJsonSchema).toBeUndefined();
+  });
+
+  it('skips an overloaded model for a short while', async () => {
+    const overloaded = new ApiError({ message: 'high demand', status: 503 });
+    const client = clientReturning(overloaded, good, good);
+    const provider = new GeminiProvider(config, silentLogger, client);
+    expect((await provider.generatePlan(input, TODAY)).model).toBe('fallback-model');
+    expect((await provider.generatePlan(input, TODAY)).model).toBe('fallback-model');
+    expect(client.generate.mock.calls.map((c) => c[0])).toEqual(['primary-model', 'fallback-model', 'fallback-model']);
   });
 
   it('logs redacted diagnostics but never returns them to users', async () => {
@@ -112,7 +127,7 @@ describe('GeminiProvider', () => {
     // Built at runtime so the repository's secret scan does not flag a fake key.
     const fakeKey = ['AI', 'za', 'Sy', 'A'.repeat(33)].join('');
     const leaky = new ApiError({ message: `bad request ${fakeKey} key=${fakeKey}`, status: 400 });
-    const client = clientReturning(leaky, leaky, leaky, leaky);
+    const client = clientReturning(leaky, leaky, leaky, leaky, leaky, leaky);
     const error = await new GeminiProvider(config, logger, client).generatePlan(input, TODAY).catch((e: AiError) => e);
     expect(error).toBeInstanceOf(AiError);
     expect((error as AiError).message).not.toContain('key');

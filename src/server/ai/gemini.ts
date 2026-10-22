@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import { AiPlanDraftSchema, AiRevisionSchema, type EventInput, type Plan } from '../../shared/schemas';
 import type { ServerConfig } from '../config';
 import type { Logger } from '../logger';
-import { toGeminiSchema } from './jsonSchema';
+import { simplifySchema, toGeminiSchema } from './jsonSchema';
 import { normalizeModelJson } from './normalize';
 import { PLAN_SYSTEM, REVISE_SYSTEM, planPrompt, revisePrompt } from './prompts';
 import { AiError, type AiProvider, type AiResult } from './types';
@@ -29,8 +29,17 @@ export const RATE_LIMIT_COOLDOWN_MS = 10 * 60_000;
 /** Content that every model reply must pass before the app uses it. */
 type Schema<T> = z.ZodType<T>;
 
-/** "schema" uses Gemini's structured output; "json" is the compatibility fallback. */
-type CallMode = 'schema' | 'json';
+/**
+ * Request styles, tried in order: Gemini structured output with the full
+ * schema and a thinking level; structured output with a simplified schema and
+ * the model's default thinking; plain JSON output with the schema in the prompt. A style the API rejects (HTTP 400)
+ * for a model is remembered and skipped for an hour.
+ */
+const CALL_MODES = ['schema', 'schema-simple', 'json'] as const;
+type CallMode = (typeof CALL_MODES)[number];
+const BAD_MODE_TTL_MS = 60 * 60_000;
+/** After an overload (HTTP 503), a model is skipped for this long. */
+export const OVERLOAD_COOLDOWN_MS = 2 * 60_000;
 
 export interface GeminiClient {
   generate(model: string, contents: string, config: GenerateContentConfig): Promise<{ text: string | undefined; blockReason?: string; finishReason?: string }>;
@@ -65,6 +74,7 @@ export class GeminiProvider implements AiProvider {
   readonly model: string;
   readonly configured: boolean;
   private readonly cooldownUntil = new Map<string, number>();
+  private readonly badModeUntil = new Map<string, number>();
   private readonly planSchema = toGeminiSchema(AiPlanDraftSchema, PLAN_DESCRIPTIONS);
   private readonly revisionSchema = toGeminiSchema(AiRevisionSchema, REVISION_DESCRIPTIONS);
 
@@ -89,9 +99,8 @@ export class GeminiProvider implements AiProvider {
   /**
    * One structured call with a bounded recovery path:
    * - a malformed reply is retried once on the same model;
-   * - if the API rejects the request itself (HTTP 400), it is retried once in
-   *   compatibility mode: plain JSON output with the schema in the prompt and
-   *   default thinking settings;
+   * - if the API rejects the request itself (HTTP 400), the next request style
+   *   is tried (see CALL_MODES) and the rejected style is skipped for a while;
    * - quota, availability and output errors move on to the next fallback model.
    * Every reply is validated with zod before it is used.
    */
@@ -112,12 +121,15 @@ export class GeminiProvider implements AiProvider {
     let lastError: AiError | undefined;
 
     for (const [modelIndex, model] of models.entries()) {
-      let mode: CallMode = 'schema';
-      for (let attempt = 0; attempt < 3; attempt += 1) {
+      const modes = CALL_MODES.filter((m) => (this.badModeUntil.get(`${model}:${m}`) ?? 0) <= this.now());
+      let modeIndex = 0;
+      let retriedOutput = false;
+      while (modeIndex < modes.length) {
+        const mode = modes[modeIndex]!;
         const started = Date.now();
         try {
           const data = await this.once(model, mode, systemInstruction, prompt, jsonSchema, schema, signal, temperature);
-          this.logger.log('info', 'ai_call', { task, model, mode, attempt, ms: Date.now() - started, ok: true });
+          this.logger.log('info', 'ai_call', { task, model, mode, ms: Date.now() - started, ok: true });
           return { data, model };
         } catch (error) {
           const mapped = this.mapError(error, signal);
@@ -125,7 +137,6 @@ export class GeminiProvider implements AiProvider {
             task,
             model,
             mode,
-            attempt,
             ms: Date.now() - started,
             ok: false,
             kind: mapped.kind,
@@ -134,15 +145,21 @@ export class GeminiProvider implements AiProvider {
           });
           lastError = mapped;
           if (mapped.kind === 'rate_limited') this.cooldownUntil.set(model, this.now() + RATE_LIMIT_COOLDOWN_MS);
-          if (mapped.diagnostics?.badRequest && mode === 'schema') {
-            mode = 'json';
+          if (mapped.diagnostics?.status === 503) this.cooldownUntil.set(model, this.now() + OVERLOAD_COOLDOWN_MS);
+          if (mapped.diagnostics?.badRequest) {
+            this.badModeUntil.set(`${model}:${mode}`, this.now() + BAD_MODE_TTL_MS);
+            modeIndex += 1;
             continue;
           }
-          if (mapped.kind === 'invalid_output' && !mapped.diagnostics?.badRequest && attempt === 0) continue;
+          if (mapped.kind === 'invalid_output' && !retriedOutput) {
+            retriedOutput = true;
+            continue;
+          }
           break;
         }
       }
-      const canFallBack = lastError && ['rate_limited', 'unavailable', 'invalid_output', 'timeout'].includes(lastError.kind) && !signal?.aborted;
+      const canFallBack =
+        lastError && ['rate_limited', 'unavailable', 'invalid_output', 'timeout'].includes(lastError.kind) && !signal?.aborted;
       if (!canFallBack || modelIndex === models.length - 1) break;
     }
     throw lastError ?? new AiError('unavailable', 'The AI planner did not respond.');
@@ -171,9 +188,11 @@ export class GeminiProvider implements AiProvider {
     const config: GenerateContentConfig =
       mode === 'schema'
         ? { ...shared, responseJsonSchema: jsonSchema, thinkingConfig: mapThinking(this.config.thinkingLevel) }
-        : shared;
+        : mode === 'schema-simple'
+          ? { ...shared, responseJsonSchema: simplifySchema(jsonSchema) }
+          : shared;
     const contents =
-      mode === 'schema' ? prompt : `${prompt}\n\nReturn only a JSON object that matches this JSON Schema exactly:\n${JSON.stringify(jsonSchema)}`;
+      mode === 'json' ? `${prompt}\n\nReturn only a JSON object that matches this JSON Schema exactly:\n${JSON.stringify(jsonSchema)}` : prompt;
     const result = await this.client!.generate(model, contents, config);
     if (result.blockReason) throw new AiError('blocked', 'The AI declined this request. Rephrase it and try again.');
     if (!result.text) {
