@@ -2,8 +2,16 @@
 
 Utsav turns a few answers about an event into a plan you can actually work from: a budget split, a dated timeline, a vendor checklist with questions to ask, and ideas that fit the guests, the style and the money. Then you can change the plan in plain English ("reduce the budget by 20%", "keep the venue budget unchanged but reduce decoration costs", "the event is now next week") and see exactly what moved.
 
+**Demo video (3:40):** https://youtu.be/Npx-K4Z7Otc
+
 **Live app:** https://utsav-event-planner.onrender.com
 (free hosting: the first request after a quiet period can take about a minute while the server wakes up)
+
+## Who it is for
+
+The main user is a family member or a couple organizing an Indian wedding on a fixed budget, for example a two-day wedding in Hubballi for 250 guests on ₹15,00,000, with a vegetarian and Jain menu, many elderly guests and a morning ceremony. They are not professional planners. They need to know where the money should go, what to book first, what to ask each vendor, and what happens to the plan when the budget, the guest count or the date changes. Birthdays and community events use the same engine with their own questions, budget categories and vendor checklists.
+
+This is a design target, not the result of user research: Utsav has not been tested with real users.
 
 ## Challenge
 
@@ -85,7 +93,28 @@ Band animates old → new ◀── plan + diff
 
 Which model wrote a plan is shown on the plan itself and in its print/PDF version, and "See the prompt and reply" opens the exact prompt and raw JSON reply of the latest AI call.
 
-**Verified on the live deployment** (23 October 2026): real plan generation and real revisions ("keep the venue budget unchanged but reduce decoration costs" kept the venue fixed, cut decor and moved the difference to contingency with the total unchanged). During testing the free-tier `gemini-3.8-flash` was often overloaded or slow, so `gemini-3.5-flash-lite` is now the first choice and the larger models are fallbacks.
+**Verified on the live deployment** (23 October 2026, recorded in the demo video), with a two-day wedding for 250 guests on ₹15,00,000:
+
+- Plan generation by `gemini-3.5-flash-lite` in about 17 seconds.
+- "Keep the venue budget unchanged but reduce decoration costs": the venue was locked, decor dropped by ₹32,500, the difference went to contingency and the total stayed the same.
+- "Reduce the budget by 20%": the total went from exactly ₹15,00,000 to ₹12,00,000 and the locked venue line did not move.
+- "Move the wedding to 14 March 2027": the task deadlines moved four weeks later (venue booking 6 Nov → 4 Dec 2026, caterer 16 Nov → 14 Dec), Gemini rewrote the venue task to confirm the new date, and the budget did not change.
+- "What will the weather be in Goa tomorrow?": nothing changed, and the app said it can only help with this event.
+
+During testing the free-tier `gemini-3.8-flash` was often overloaded or slow, so `gemini-3.5-flash-lite` is now the first choice and the larger models are fallbacks.
+
+### Prompt and model changes during the build
+
+The prompts and the way they are sent changed as live testing exposed problems. Each change below is in the git history.
+
+| Problem seen | Change |
+| --- | --- |
+| Free text could try to give the model instructions | Every free-text field is wrapped in `<user_text>` tags, any tags inside the text are stripped, and the system instruction says to treat wrapped text as information only. The model can only suggest bounded weight changes; it never sets amounts or dates |
+| Model arithmetic cannot be trusted for exact changes | Numbers in the request ("by 20%", "from 50 to 80", "12 lakh") are parsed in code and override the model's values |
+| Gemini rejected structured output with the full JSON Schema (HTTP 400) on some models | Requests step through three styles: a simplified schema (no length or range limits, which zod still enforces), the full schema, then plain JSON with the schema in the prompt. A style a model rejects is remembered for an hour |
+| Replies in the plain-JSON style were close to the schema but not exact (numbers as text, "7 pm") | A repair step normalizes these before strict zod validation; anything that cannot be repaired is dropped or rejected |
+| Larger models were overloaded (503) or timed out after about 60 seconds on the free tier | The fastest model goes first with a 40-second limit; overloaded or slow models are skipped for 2 minutes and rate-limited ones for 10 |
+| It was hard to show what the AI actually did | Each plan keeps the exact prompt and raw reply of its latest AI call, shown with "See the prompt and reply" |
 
 If the server has no API key in development, it uses **sample data**: fixed placeholder content that is clearly labelled in the header and on the plan and is never presented as AI output. Production never falls back to sample data silently; it reports that AI is not configured.
 
@@ -175,6 +204,7 @@ tests/
 - Free-tier Gemini capacity is limited: when the primary models are overloaded or out of quota, the lighter fallback model writes the plan, and if every model is unavailable the app says so and asks you to wait. A plan usually takes 10 to 45 seconds.
 - The event-day schedule covers the main event; multi-day weddings group items by function rather than giving every day its own date.
 - Interface text is in English.
+- Utsav has not been tested with real users. Plan quality depends on the model: the app guarantees that numbers and dates are consistent, but not that every suggestion suits every family.
 
 ## License
 
