@@ -1,22 +1,8 @@
 import type { z } from 'zod';
-import {
-  categoriesFor,
-  EVENT_CONFIG,
-  type CategoryKey,
-} from './constants';
-import { clampContingency, clampFactor, computeBudget, lockedAmounts } from './budget';
-import { addDays, daysBetween } from './dates';
-import type {
-  AiIdeaSchema,
-  AiPlanDraft,
-  AiVendorSchema,
-  Budget,
-  EventInput,
-  Idea,
-  Plan,
-  PlanMeta,
-  Vendor,
-} from './schemas';
+import { categoriesFor, EVENT_CONFIG, type CategoryKey } from './constants';
+import { clampContingency, clampFactor, computeBudget } from './budget';
+import { addDays } from './dates';
+import type { AiIdeaSchema, AiPlanDraft, AiVendorSchema, Budget, EventInput, Idea, Plan, PlanMeta, Vendor } from './schemas';
 import { buildSchedule, checkEventDate, compressOffsets, scheduleTasks, timelineWarnings } from './timeline';
 import { vendorTemplatesFor, type VendorKey } from './vendorCatalog';
 
@@ -44,73 +30,91 @@ export function factorsFromAdjustments(
   return { factors, rationales };
 }
 
-/** Recomputes the budget for a plan's current inputs, keeping locks. */
-export function rebuildBudget(
-  input: EventInput,
-  previous: Pick<Budget, 'contingencyPct' | 'lines' | 'tradeoffs'>,
-  aiFactors: Partial<Record<CategoryKey, number>>,
-  options: { locked?: Partial<Record<CategoryKey, number>>; rationales?: Partial<Record<CategoryKey, string>>; tradeoffs?: string[] } = {},
-): Budget {
-  const rationales: Partial<Record<CategoryKey, string>> = {};
-  for (const line of previous.lines) if (line.rationale) rationales[line.key] = line.rationale;
-  return computeBudget({
-    eventType: input.eventType,
-    currency: input.currency,
-    total: input.totalBudget,
-    guestCount: input.guestCount,
-    priorities: input.priorities,
-    contingencyPct: previous.contingencyPct,
-    aiFactors,
-    locked: options.locked ?? lockedAmounts(previous.lines),
-    rationales: { ...rationales, ...options.rationales },
-    tradeoffs: options.tradeoffs ?? previous.tradeoffs,
-  });
-}
-
 /* ------------------------------------------------------------------ */
 /* Vendors                                                              */
 /* ------------------------------------------------------------------ */
+
+type VendorTemplate = ReturnType<typeof vendorTemplatesFor>[number];
+
+interface VendorContext {
+  input: EventInput;
+  /** AI guidance for this vendor, only when it explains why the vendor is needed. */
+  ai: AiVendor | undefined;
+  /** The same vendor in the previous version of the plan, to keep progress. */
+  kept: Vendor | undefined;
+  leadDays: number;
+}
+
+function standardReason(eventType: EventInput['eventType']): string {
+  return `A standard part of a ${eventType === 'community' ? 'community event' : eventType} plan.`;
+}
+
+function initialStatus(template: VendorTemplate, input: EventInput): Vendor['status'] {
+  return template.key === 'venue' && input.venueStatus === 'booked' ? 'booked' : 'not_started';
+}
+
+/** Why the vendor is needed and what to ask: Gemini's guidance where it gave some, the standard checklist otherwise. */
+function vendorGuidance(template: VendorTemplate, ai: AiVendor | undefined, eventType: EventInput['eventType']) {
+  if (!ai) {
+    return {
+      why: standardReason(eventType),
+      questions: template.questions,
+      compareOn: template.compareOn,
+      redFlags: [],
+      source: 'standard' as const,
+    };
+  }
+  return {
+    why: ai.why,
+    questions: ai.questions.length ? ai.questions : template.questions,
+    compareOn: ai.compareOn.length ? ai.compareOn : template.compareOn,
+    redFlags: ai.redFlags,
+    source: 'ai' as const,
+  };
+}
+
+/** Progress the user recorded on the previous version of the plan, or a fresh start. */
+function vendorProgress(template: VendorTemplate, kept: Vendor | undefined, input: EventInput) {
+  if (kept) return { id: kept.id, status: kept.status, quote: kept.quote, notes: kept.notes };
+  return { id: newId(), status: initialStatus(template, input), quote: null, notes: '' };
+}
+
+function vendorFromTemplate(template: VendorTemplate, { input, ai, kept, leadDays }: VendorContext): Vendor {
+  return {
+    ...vendorProgress(template, kept, input),
+    ...vendorGuidance(template, ai, input.eventType),
+    key: template.key,
+    label: template.label,
+    budgetCategory: template.budgetCategory,
+    leadDays,
+    bookByDate: addDays(input.eventDate, -leadDays),
+  };
+}
 
 /**
  * Merges AI vendor guidance into the standard checklist. Every standard
  * category appears exactly once; AI entries for categories that do not
  * belong to this event type are dropped.
  */
-export function buildVendors(
-  input: EventInput,
-  aiVendors: readonly AiVendor[],
-  today: string,
-  previous: readonly Vendor[] = [],
-): Vendor[] {
+export function buildVendors(input: EventInput, aiVendors: readonly AiVendor[], today: string, previous: readonly Vendor[] = []): Vendor[] {
   const templates = vendorTemplatesFor(input.eventType);
   const daysUntil = checkEventDate(input.eventDate, today);
-  const fitted = compressOffsets(templates.map((t) => t.leadDays), daysUntil);
-  const byKey = new Map<VendorKey, AiVendor>();
-  for (const vendor of aiVendors) if (!byKey.has(vendor.category)) byKey.set(vendor.category, vendor);
+  const fitted = compressOffsets(
+    templates.map((t) => t.leadDays),
+    daysUntil,
+  );
+  const aiByKey = new Map<VendorKey, AiVendor>();
+  for (const vendor of aiVendors) if (vendor.why && !aiByKey.has(vendor.category)) aiByKey.set(vendor.category, vendor);
   const previousByKey = new Map(previous.map((v) => [v.key, v] as const));
 
-  return templates.map((template, index): Vendor => {
-    const found = byKey.get(template.key);
-    const ai = found && found.why ? found : undefined;
-    const kept = previousByKey.get(template.key);
-    const leadDays = fitted[index] ?? 0;
-    return {
-      id: kept?.id ?? newId(),
-      key: template.key,
-      label: template.label,
-      why: ai?.why || `A standard part of a ${input.eventType === 'community' ? 'community event' : input.eventType} plan.`,
-      questions: ai?.questions.length ? ai.questions : template.questions,
-      compareOn: ai?.compareOn.length ? ai.compareOn : template.compareOn,
-      redFlags: ai?.redFlags ?? [],
-      budgetCategory: template.budgetCategory,
-      leadDays,
-      bookByDate: addDays(input.eventDate, -leadDays),
-      status: kept?.status ?? (template.key === 'venue' && input.venueStatus === 'booked' ? 'booked' : 'not_started'),
-      quote: kept?.quote ?? null,
-      notes: kept?.notes ?? '',
-      source: ai ? 'ai' : 'standard',
-    };
-  });
+  return templates.map((template, index) =>
+    vendorFromTemplate(template, {
+      input,
+      ai: aiByKey.get(template.key),
+      kept: previousByKey.get(template.key),
+      leadDays: fitted[index] ?? 0,
+    }),
+  );
 }
 
 /** Re-dates vendor booking deadlines after a date change, keeping progress. */
@@ -207,8 +211,4 @@ export function assemblePlan(input: EventInput, draft: AiPlanDraft, meta: PlanMe
     revisions: [],
     meta,
   };
-}
-
-export function daysToGo(plan: Pick<Plan, 'input'>, today: string): number {
-  return daysBetween(today, plan.input.eventDate);
 }

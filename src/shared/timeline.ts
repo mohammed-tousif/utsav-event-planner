@@ -77,9 +77,7 @@ export function scheduleTasks(seeds: readonly TaskSeed[], eventDate: string, tod
       done: seed.done ?? false,
     };
   });
-  return tasks.sort(
-    (a, b) => b.offsetDays - a.offsetDays || PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority],
-  );
+  return tasks.sort((a, b) => b.offsetDays - a.offsetDays || PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
 }
 
 function dedupeByTitle<T extends { title: string }>(items: readonly T[]): T[] {
@@ -96,7 +94,8 @@ export function timelineWarnings(eventType: string, daysUntil: number, tasks: re
   const warnings: string[] = [];
   const compressed = tasks.filter((task) => task.compressed).length;
   if (daysUntil === 0) warnings.push('The event is today. Only the event-day schedule and urgent tasks still apply.');
-  else if (daysUntil <= 7) warnings.push(`Only ${daysUntil} day${daysUntil === 1 ? '' : 's'} to go. Lock the venue, food and key vendors first.`);
+  else if (daysUntil <= 7)
+    warnings.push(`Only ${daysUntil} day${daysUntil === 1 ? '' : 's'} to go. Lock the venue, food and key vendors first.`);
   if (compressed > 0) {
     warnings.push(
       `${compressed} task${compressed === 1 ? ' was' : 's were'} brought forward because the event is sooner than their usual lead time.`,
@@ -129,10 +128,7 @@ export function buildSchedule(items: readonly AiScheduleItem[], newId: () => str
       notes: item.notes,
       overlaps: false,
     }))
-    .sort(
-      (a, b) =>
-        (segmentOrder.get(a.segment) ?? 0) - (segmentOrder.get(b.segment) ?? 0) || toMinutes(a.time) - toMinutes(b.time),
-    );
+    .sort((a, b) => (segmentOrder.get(a.segment) ?? 0) - (segmentOrder.get(b.segment) ?? 0) || toMinutes(a.time) - toMinutes(b.time));
 
   for (let i = 1; i < sorted.length; i += 1) {
     const prev = sorted[i - 1];

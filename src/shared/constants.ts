@@ -41,15 +41,7 @@ export const PRIORITY_LABELS: Record<PriorityKey, string> = {
   keepsakes: 'Invites, favours and keepsakes',
 };
 
-export const DIETARY_KEYS = [
-  'vegetarian',
-  'jain',
-  'vegan',
-  'non_vegetarian',
-  'halal',
-  'gluten_free',
-  'nut_free',
-] as const;
+export const DIETARY_KEYS = ['vegetarian', 'jain', 'vegan', 'non_vegetarian', 'halal', 'gluten_free', 'nut_free'] as const;
 export type DietaryKey = (typeof DIETARY_KEYS)[number];
 
 export const DIETARY_LABELS: Record<DietaryKey, string> = {
@@ -265,18 +257,7 @@ export const VENUE_STATUS_LABELS: Record<VenueStatus, string> = {
 /* Timeline                                                             */
 /* ------------------------------------------------------------------ */
 
-export const TASK_AREAS = [
-  'venue',
-  'food',
-  'decor',
-  'guests',
-  'vendors',
-  'attire',
-  'logistics',
-  'paperwork',
-  'ceremony',
-  'other',
-] as const;
+export const TASK_AREAS = ['venue', 'food', 'decor', 'guests', 'vendors', 'attire', 'logistics', 'paperwork', 'ceremony', 'other'] as const;
 export type TaskArea = (typeof TASK_AREAS)[number];
 
 export const TASK_PRIORITIES = ['high', 'medium', 'low'] as const;
