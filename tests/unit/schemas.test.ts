@@ -75,7 +75,9 @@ describe('AI output validation', () => {
     const draft = sampleDraft(makeInput());
     expect(AiPlanDraftSchema.safeParse({ ...draft, tasks: [] }).success).toBe(false);
     expect(AiPlanDraftSchema.safeParse({ ...draft, ideas: 'none' }).success).toBe(false);
-    expect(AiPlanDraftSchema.safeParse({ ...draft, schedule: [{ ...draft.schedule[0], time: '7pm' }, draft.schedule[1]] }).success).toBe(false);
+    expect(AiPlanDraftSchema.safeParse({ ...draft, schedule: [{ ...draft.schedule[0], time: '7pm' }, draft.schedule[1]] }).success).toBe(
+      false,
+    );
     expect(AiPlanDraftSchema.safeParse({ ...draft, adjustments: [{ category: 'yachts', factor: 1, reason: '' }] }).success).toBe(false);
   });
 

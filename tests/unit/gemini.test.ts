@@ -79,7 +79,9 @@ describe('GeminiProvider', () => {
 
   it('reports a rate limit when both models are exhausted', async () => {
     const client = clientReturning(new ApiError({ message: 'quota', status: 429 }), new ApiError({ message: 'quota', status: 429 }));
-    await expect(new GeminiProvider(config, silentLogger, client).generatePlan(input, TODAY)).rejects.toMatchObject({ kind: 'rate_limited' });
+    await expect(new GeminiProvider(config, silentLogger, client).generatePlan(input, TODAY)).rejects.toMatchObject({
+      kind: 'rate_limited',
+    });
   });
 
   it.each([
@@ -139,8 +141,15 @@ describe('GeminiProvider', () => {
     await expect(
       new GeminiProvider(config, silentLogger, clientReturning({ blockReason: 'SAFETY' })).generatePlan(input, TODAY),
     ).rejects.toMatchObject({ kind: 'blocked' });
-    const truncated = clientReturning({ finishReason: 'MAX_TOKENS' }, { finishReason: 'MAX_TOKENS' }, { finishReason: 'MAX_TOKENS' }, { finishReason: 'MAX_TOKENS' });
-    await expect(new GeminiProvider(config, silentLogger, truncated).generatePlan(input, TODAY)).rejects.toMatchObject({ kind: 'invalid_output' });
+    const truncated = clientReturning(
+      { finishReason: 'MAX_TOKENS' },
+      { finishReason: 'MAX_TOKENS' },
+      { finishReason: 'MAX_TOKENS' },
+      { finishReason: 'MAX_TOKENS' },
+    );
+    await expect(new GeminiProvider(config, silentLogger, truncated).generatePlan(input, TODAY)).rejects.toMatchObject({
+      kind: 'invalid_output',
+    });
   });
 
   it('refuses to run without an API key', async () => {
@@ -179,7 +188,7 @@ describe('prompts', () => {
 
   it('grounds the event description in today’s date and per-guest budget', () => {
     const text = describeEvent(makeInput(), TODAY);
-    expect(text).toContain('Today\'s date: 2026-10-22.');
+    expect(text).toContain("Today's date: 2026-10-22.");
     expect(text).toContain('115 days from today');
     expect(text).toContain('about 6000 INR per guest');
   });

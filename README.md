@@ -16,15 +16,15 @@ This is a design target, not the result of user research: Utsav has not been tes
 ## Challenge
 
 PromptWars Virtual, Challenge 5: **Celebration & Event Planner**.
-*"Create a GenAI-powered planning assistant that helps users organize weddings, birthdays, and community events with budgets, timelines, vendor checklists, and personalized ideas."*
+_"Create a GenAI-powered planning assistant that helps users organize weddings, birthdays, and community events with budgets, timelines, vendor checklists, and personalized ideas."_
 
-| Requirement | Where it lives in Utsav |
-| --- | --- |
+| Requirement                           | Where it lives in Utsav                                                                                           |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Weddings, birthdays, community events | Event type is the first choice; each type has its own follow-up questions, budget categories and vendor checklist |
-| Budgets | Budget tab: amounts, shares, contingency, per-guest cost, locks, trade-offs, tight-budget warnings |
-| Timelines | Timeline tab: preparation tasks with due dates and priorities, plus the event-day run sheet |
-| Vendor checklists | Vendors tab: every vendor the event needs, why, questions to ask, what to compare, red flags, status and quotes |
-| Personalized ideas | Ideas tab: ideas with an explicit "why it fits", an estimated cost and the budget line it would come from |
+| Budgets                               | Budget tab: amounts, shares, contingency, per-guest cost, locks, trade-offs, tight-budget warnings                |
+| Timelines                             | Timeline tab: preparation tasks with due dates and priorities, plus the event-day run sheet                       |
+| Vendor checklists                     | Vendors tab: every vendor the event needs, why, questions to ask, what to compare, red flags, status and quotes   |
+| Personalized ideas                    | Ideas tab: ideas with an explicit "why it fits", an estimated cost and the budget line it would come from         |
 
 ## How it works
 
@@ -45,7 +45,7 @@ Plan workspace ◀── complete plan ── (budget maths, dates, merging)
 Band animates old → new ◀── plan + diff
 ```
 
-**The split of responsibilities is the core idea.** Gemini decides *what* a good plan looks like for this event (which categories deserve more weight and why, which tasks matter, what to ask vendors, which ideas fit). The app decides *how much* and *when*: every rupee and every date is computed in TypeScript, so totals always add up, nothing goes negative, and a "kept" category never moves.
+**The split of responsibilities is the core idea.** Gemini decides _what_ a good plan looks like for this event (which categories deserve more weight and why, which tasks matter, what to ask vendors, which ideas fit). The app decides _how much_ and _when_: every rupee and every date is computed in TypeScript, so totals always add up, nothing goes negative, and a "kept" category never moves.
 
 ### Approach and logic
 
@@ -62,7 +62,7 @@ Band animates old → new ◀── plan + diff
    - rebalances everything (respecting locks) when the total or guest count changes;
    - re-dates tasks and vendor deadlines when the date moves, keeping completed tasks;
    - refuses impossible changes (locks bigger than the new total, past dates) with a clear message instead of overspending.
-   Each revision is stored with what was asked, what Gemini understood, the trade-offs and a before/after diff, and the budget band animates from the old split to the new one.
+     Each revision is stored with what was asked, what Gemini understood, the trade-offs and a before/after diff, and the budget band animates from the old split to the new one.
 5. **Direct edits without AI.** Guests, total budget, contingency and per-category locks can be changed directly; the same engine recalculates instantly with no AI call.
 
 ## Features
@@ -82,14 +82,14 @@ Band animates old → new ◀── plan + diff
 
 ## GenAI usage
 
-| | |
-| --- | --- |
-| Provider | Google Gemini API (`@google/genai` SDK), called only from the server |
-| Models | `gemini-3.5-flash-lite` first (fast, and the most available on the free tier), then `gemini-3.6-flash` and `gemini-3.8-flash` as fallbacks when a model is overloaded, rate-limited, slow or returns unusable output (`GEMINI_MODEL`, `GEMINI_FALLBACK_MODELS`) |
-| Plan generation | Budget weighting with reasons, contingency suggestion, trade-offs, 12–22 preparation tasks, event-day schedule, tailored vendor guidance, 4–6 personalized ideas, assumptions |
-| Revision | Interprets the change request against the current plan: new values, locks, weight changes, which sections to rewrite, a change summary and trade-offs |
-| Output control | JSON output constrained by a JSON Schema generated from the server's zod schemas. If a model rejects a request style, the next one is tried (simplified schema, full schema with a thinking level, then plain JSON with the schema in the prompt) and the rejected style is remembered. Every reply is repaired for small deviations (numbers as text, 12-hour times) and then validated with zod before the engine uses it |
-| Resilience | 40-second limit per model call; one retry on malformed output; overloaded or timed-out models skipped for 2 minutes and rate-limited ones for 10; identical generate requests cached for 30 minutes |
+|                 |                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider        | Google Gemini API (`@google/genai` SDK), called only from the server                                                                                                                                                                                                                                                                                                                                                        |
+| Models          | `gemini-3.5-flash-lite` first (fast, and the most available on the free tier), then `gemini-3.6-flash` and `gemini-3.8-flash` as fallbacks when a model is overloaded, rate-limited, slow or returns unusable output (`GEMINI_MODEL`, `GEMINI_FALLBACK_MODELS`)                                                                                                                                                             |
+| Plan generation | Budget weighting with reasons, contingency suggestion, trade-offs, 12–22 preparation tasks, event-day schedule, tailored vendor guidance, 4–6 personalized ideas, assumptions                                                                                                                                                                                                                                               |
+| Revision        | Interprets the change request against the current plan: new values, locks, weight changes, which sections to rewrite, a change summary and trade-offs                                                                                                                                                                                                                                                                       |
+| Output control  | JSON output constrained by a JSON Schema generated from the server's zod schemas. If a model rejects a request style, the next one is tried (simplified schema, full schema with a thinking level, then plain JSON with the schema in the prompt) and the rejected style is remembered. Every reply is repaired for small deviations (numbers as text, 12-hour times) and then validated with zod before the engine uses it |
+| Resilience      | 40-second limit per model call; one retry on malformed output; overloaded or timed-out models skipped for 2 minutes and rate-limited ones for 10; identical generate requests cached for 30 minutes                                                                                                                                                                                                                         |
 
 Which model wrote a plan is shown on the plan itself and in its print/PDF version, and "See the prompt and reply" opens the exact prompt and raw JSON reply of the latest AI call.
 
@@ -107,14 +107,14 @@ During testing the free-tier `gemini-3.8-flash` was often overloaded or slow, so
 
 The prompts and the way they are sent changed as live testing exposed problems. Each change below is in the git history.
 
-| Problem seen | Change |
-| --- | --- |
-| Free text could try to give the model instructions | Every free-text field is wrapped in `<user_text>` tags, any tags inside the text are stripped, and the system instruction says to treat wrapped text as information only. The model can only suggest bounded weight changes; it never sets amounts or dates |
-| Model arithmetic cannot be trusted for exact changes | Numbers in the request ("by 20%", "from 50 to 80", "12 lakh") are parsed in code and override the model's values |
-| Gemini rejected structured output with the full JSON Schema (HTTP 400) on some models | Requests step through three styles: a simplified schema (no length or range limits, which zod still enforces), the full schema, then plain JSON with the schema in the prompt. A style a model rejects is remembered for an hour |
-| Replies in the plain-JSON style were close to the schema but not exact (numbers as text, "7 pm") | A repair step normalizes these before strict zod validation; anything that cannot be repaired is dropped or rejected |
-| Larger models were overloaded (503) or timed out after about 60 seconds on the free tier | The fastest model goes first with a 40-second limit; overloaded or slow models are skipped for 2 minutes and rate-limited ones for 10 |
-| It was hard to show what the AI actually did | Each plan keeps the exact prompt and raw reply of its latest AI call, shown with "See the prompt and reply" |
+| Problem seen                                                                                     | Change                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Free text could try to give the model instructions                                               | Every free-text field is wrapped in `<user_text>` tags, any tags inside the text are stripped, and the system instruction says to treat wrapped text as information only. The model can only suggest bounded weight changes; it never sets amounts or dates |
+| Model arithmetic cannot be trusted for exact changes                                             | Numbers in the request ("by 20%", "from 50 to 80", "12 lakh") are parsed in code and override the model's values                                                                                                                                            |
+| Gemini rejected structured output with the full JSON Schema (HTTP 400) on some models            | Requests step through three styles: a simplified schema (no length or range limits, which zod still enforces), the full schema, then plain JSON with the schema in the prompt. A style a model rejects is remembered for an hour                            |
+| Replies in the plain-JSON style were close to the schema but not exact (numbers as text, "7 pm") | A repair step normalizes these before strict zod validation; anything that cannot be repaired is dropped or rejected                                                                                                                                        |
+| Larger models were overloaded (503) or timed out after about 60 seconds on the free tier         | The fastest model goes first with a 40-second limit; overloaded or slow models are skipped for 2 minutes and rate-limited ones for 10                                                                                                                       |
+| It was hard to show what the AI actually did                                                     | Each plan keeps the exact prompt and raw reply of its latest AI call, shown with "See the prompt and reply"                                                                                                                                                 |
 
 If the server has no API key in development, it uses **sample data**: fixed placeholder content that is clearly labelled in the header and on the plan and is never presented as AI output. Production never falls back to sample data silently; it reports that AI is not configured.
 
@@ -145,12 +145,23 @@ If the server has no API key in development, it uses **sample data**: fixed plac
 ## Testing
 
 ```bash
-npm test          # 151 unit and API tests (Vitest + Supertest)
-npm run test:e2e  # 10 end-to-end tests in Chromium (Playwright), desktop and mobile
-npm run check     # typecheck + lint + unit/API tests + build + secret scan
+npm test               # 209 unit and API tests (Vitest + Supertest)
+npm run test:coverage  # the same, with a coverage report and minimum thresholds
+npm run test:e2e       # 10 end-to-end tests in Chromium (Playwright), desktop and mobile
+npm run check          # typecheck + lint + format check + tests with coverage + build + secret scan
 ```
 
-Covered: budget totals and rounding for every event type, locks and infeasible locks, tight and implausible budgets, past, same-day and next-week dates, task compression, schedule overlaps, every example revision request, exact parsing of percentages and guest counts, malformed and truncated AI output, repair of near-miss JSON, retries, request-style stepping, model fallback, overload and quota cooldowns, provider error mapping with redacted diagnostics, prompt-injection wrapping, input validation, rate limiting, payload limits, security headers, saved-plan recovery, import and export, print output, keyboard navigation, mobile layout and axe accessibility scans. End-to-end tests run against the production build in sample-data mode so they are repeatable; the real Gemini flow was verified on the deployed app.
+Coverage of the logic (shared engine, server and client helpers) is about 96% of statements and 86% of branches; `npm run test:coverage` fails below 90% statements, functions and lines or 80% branches. React components are exercised by the Playwright journeys instead.
+
+Covered: budget totals and rounding for every event type, locks and infeasible locks, tight and implausible budgets, past, same-day and next-week dates, task compression, schedule overlaps, every example revision request, exact parsing of percentages and guest counts, malformed and truncated AI output, repair of near-miss JSON, retries, request-style stepping, model fallback, overload and quota cooldowns, provider error mapping with redacted diagnostics, prompt-injection wrapping, input validation and friendly form messages, rate limiting, payload limits, security headers, static serving, saved-plan recovery, blocked and full browser storage, the API client's error handling, calendar export, import and export, print output, keyboard navigation, mobile layout and axe accessibility scans. End-to-end tests run against the production build in sample-data mode so they are repeatable; the real Gemini flow was verified on the deployed app.
+
+## Code quality
+
+- **Small units with one job.** Each step of a revision (new details, locks, weights, budget, sections) and each Gemini concern (request building, reply validation, error mapping, model health) is its own function or module. The intake form is one component per step plus a form hook.
+- **Limits enforced, not just intended.** ESLint fails the build if a function's cyclomatic complexity passes 15, a function passes 80 lines, a file passes 300 lines, nesting passes 3 levels or a function takes more than 5 parameters. `any` is banned and type-only imports are explicit.
+- **Strict TypeScript** (`strict`, `noUncheckedIndexedAccess`), with every runtime boundary validated by zod.
+- **Consistent formatting** with Prettier and `.editorconfig`, checked in CI.
+- **Continuous integration.** GitHub Actions runs `npm run check` and the Playwright suite on every push to `main`.
 
 ## Running locally
 
@@ -167,16 +178,16 @@ For development with hot reload: `npm run dev` (API on 8080, UI on 5173). Withou
 
 ### Environment variables
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `GEMINI_API_KEY` | none | Gemini API key (server only) |
-| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | Primary model |
-| `GEMINI_FALLBACK_MODELS` | `gemini-3.6-flash,gemini-3.8-flash` | Comma-separated models tried in order when the primary is overloaded, rate-limited or unavailable |
-| `GEMINI_THINKING_LEVEL` | `LOW` | `MINIMAL`, `LOW`, `MEDIUM`, `HIGH` or `OFF` |
-| `GEMINI_TIMEOUT_MS` | `40000` | Per-call timeout |
-| `AI_PROVIDER` | auto | `sample` forces labelled sample data |
-| `RATE_LIMIT_MAX_AI` / `RATE_LIMIT_WINDOW_MS` | `12` / `900000` | AI requests allowed per IP per window |
-| `PORT` | `8080` | HTTP port |
+| Variable                                     | Default                             | Purpose                                                                                           |
+| -------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `GEMINI_API_KEY`                             | none                                | Gemini API key (server only)                                                                      |
+| `GEMINI_MODEL`                               | `gemini-3.5-flash-lite`             | Primary model                                                                                     |
+| `GEMINI_FALLBACK_MODELS`                     | `gemini-3.6-flash,gemini-3.8-flash` | Comma-separated models tried in order when the primary is overloaded, rate-limited or unavailable |
+| `GEMINI_THINKING_LEVEL`                      | `LOW`                               | `MINIMAL`, `LOW`, `MEDIUM`, `HIGH` or `OFF`                                                       |
+| `GEMINI_TIMEOUT_MS`                          | `40000`                             | Per-call timeout                                                                                  |
+| `AI_PROVIDER`                                | auto                                | `sample` forces labelled sample data                                                              |
+| `RATE_LIMIT_MAX_AI` / `RATE_LIMIT_WINDOW_MS` | `12` / `900000`                     | AI requests allowed per IP per window                                                             |
+| `PORT`                                       | `8080`                              | HTTP port                                                                                         |
 
 ## Deployment
 
@@ -186,14 +197,26 @@ The app is one Node service that serves both the API and the built UI. `render.y
 
 ```
 src/
-  shared/    domain logic used by server and browser: schemas, budget engine,
-             timeline scheduling, vendor catalogue, revision engine, intake checks
-  server/    Express app, Gemini provider, prompts, JSON Schema conversion, config
-  client/    React UI: intake, plan workspace, budget band, tabs, export, storage
+  shared/              domain logic used by server and browser
+    schemas/           zod schemas: user input, AI replies, saved plans, API requests
+    revision/          changing a plan: request parsing, AI revisions, direct edits, diffs
+    budget.ts          budget engine (weights, locks, rounding, warnings)
+    timeline.ts        task scheduling and compression, event-day schedule
+    plan.ts            assembling a plan from an AI draft, vendors, ideas
+  server/
+    ai/                Gemini provider, request styles, reply validation, model health, prompts
+    http/              security headers, rate limit, request parsing, error mapping
+    routes/            /api/plans and /api/plans/revise
+    app.ts             Express app wiring
+  client/
+    components/        plan workspace, tabs, budget band, change panel
+      intake/          the five-step form: one component per step, draft validation, form hook
+      plan/            plan header, exports, editing hook
+    lib/               API client, storage, exports, formatting
 tests/
-  unit/      engine, schemas, prompts and Gemini provider tests
-  api/       HTTP tests with Supertest
-  e2e/       Playwright journeys, accessibility and mobile checks
+  unit/                engine, schemas, prompts, Gemini provider, client logic
+  api/                 HTTP tests with Supertest
+  e2e/                 Playwright journeys, accessibility and mobile checks
 ```
 
 ## Assumptions and limitations

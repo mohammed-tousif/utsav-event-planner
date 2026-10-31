@@ -59,16 +59,25 @@ describe('POST /api/plans', () => {
   });
 
   it('rejects past event dates', async () => {
-    const res = await request(appWith()).post('/api/plans').send(body({ input: makeInput({ eventDate: '2026-10-01' }) })).expect(400);
+    const res = await request(appWith())
+      .post('/api/plans')
+      .send(body({ input: makeInput({ eventDate: '2026-10-01' }) }))
+      .expect(400);
     expect(res.body.error.code).toBe('invalid_date');
   });
 
   it('accepts an event today', async () => {
-    await request(appWith()).post('/api/plans').send(body({ input: makeInput({ eventDate: TODAY }) })).expect(200);
+    await request(appWith())
+      .post('/api/plans')
+      .send(body({ input: makeInput({ eventDate: TODAY }) }))
+      .expect(200);
   });
 
   it('rejects a device date far from the real date', async () => {
-    const res = await request(appWith()).post('/api/plans').send(body({ clientToday: addDays(TODAY, 5) })).expect(400);
+    const res = await request(appWith())
+      .post('/api/plans')
+      .send(body({ clientToday: addDays(TODAY, 5) }))
+      .expect(400);
     expect(res.body.error.fields.clientToday).toBeDefined();
   });
 
@@ -152,7 +161,10 @@ describe('POST /api/plans/revise', () => {
   it('explains when a request changes nothing', async () => {
     const app = appWith();
     const plan = await createPlan(app);
-    const res = await request(app).post('/api/plans/revise').send({ plan, request: 'What is the weather?', clientToday: TODAY }).expect(422);
+    const res = await request(app)
+      .post('/api/plans/revise')
+      .send({ plan, request: 'What is the weather?', clientToday: TODAY })
+      .expect(422);
     expect(res.body.error.code).toBe('no_change');
   });
 
@@ -161,7 +173,10 @@ describe('POST /api/plans/revise', () => {
     const plan = await createPlan(app);
     await request(app).post('/api/plans/revise').send({ plan, request: '  ', clientToday: TODAY }).expect(400);
     const tampered = { ...plan, budget: { ...plan.budget, total: -10 } };
-    await request(app).post('/api/plans/revise').send({ plan: tampered, request: 'Reduce the budget by 20%', clientToday: TODAY }).expect(400);
+    await request(app)
+      .post('/api/plans/revise')
+      .send({ plan: tampered, request: 'Reduce the budget by 20%', clientToday: TODAY })
+      .expect(400);
   });
 });
 

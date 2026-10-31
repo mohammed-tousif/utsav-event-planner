@@ -28,7 +28,11 @@ describe('assemblePlan', () => {
 
   it('applies the model’s adjustments and clamps its contingency', () => {
     const input = makeInput();
-    const draft = { ...sampleDraft(input), contingencyPct: 45, adjustments: [{ category: 'photo_video' as const, factor: 1.5, reason: 'Photos are a top priority.' }] };
+    const draft = {
+      ...sampleDraft(input),
+      contingencyPct: 45,
+      adjustments: [{ category: 'photo_video' as const, factor: 1.5, reason: 'Photos are a top priority.' }],
+    };
     const plan = assemblePlan(input, draft, meta, TODAY);
     expect(plan.budget.contingencyPct).toBe(15);
     expect(plan.budget.lines.find((l) => l.key === 'photo_video')!.rationale).toBe('Photos are a top priority.');
@@ -47,7 +51,13 @@ describe('buildVendors', () => {
     const vendors = buildVendors(
       input,
       [
-        { category: 'caterer', why: 'Jain and vegetarian menus need a specialist.', questions: ['Do you cook Jain food separately?'], compareOn: ['Jain experience'], redFlags: [] },
+        {
+          category: 'caterer',
+          why: 'Jain and vegetarian menus need a specialist.',
+          questions: ['Do you cook Jain food separately?'],
+          compareOn: ['Jain experience'],
+          redFlags: [],
+        },
         { category: 'cake_baker', why: 'Not a wedding vendor here.', questions: [], compareOn: [], redFlags: [] },
       ],
       TODAY,

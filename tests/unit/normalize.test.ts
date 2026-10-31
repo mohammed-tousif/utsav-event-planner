@@ -24,14 +24,20 @@ describe('normalizeModelJson', () => {
     const messy = {
       ...draft,
       contingencyPct: '10%',
-      adjustments: [{ category: 'decor', factor: '1.2', reason: 'x' }, { category: 'fireworks', factor: 2, reason: 'y' }],
+      adjustments: [
+        { category: 'decor', factor: '1.2', reason: 'x' },
+        { category: 'fireworks', factor: 2, reason: 'y' },
+      ],
       tasks: (draft.tasks as object[]).map((t) => ({ ...t, area: 'misc', priority: 'urgent', offsetDays: '30' })),
       schedule: [
         { segment: 'Reception', time: '7 pm', durationMin: '60', title: 'Dinner' },
         { segment: 'Reception', time: 'later', durationMin: 30, title: 'Dropped', notes: '' },
         { time: '9:00', durationMin: 30, title: 'Breakfast' },
       ],
-      vendors: [{ category: 'caterer', questions: ['Q?', 5] }, { category: 'astrologer', why: 'no' }],
+      vendors: [
+        { category: 'caterer', questions: ['Q?', 5] },
+        { category: 'astrologer', why: 'no' },
+      ],
       ideas: (draft.ideas as object[]).map((i) => ({ ...i, effort: 'tiny', budgetCategory: 'misc', estimatedCost: '₹5,000' })),
     };
     const parsed = AiPlanDraftSchema.safeParse(normalizeModelJson(messy));

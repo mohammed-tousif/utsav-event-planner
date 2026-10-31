@@ -19,6 +19,20 @@ export default tseslint.config(
     },
   },
   {
+    // Keep units small and readable; CI fails if a function or file grows past these limits.
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      complexity: ['error', 15],
+      'max-depth': ['error', 3],
+      'max-params': ['error', 5],
+      'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true }],
+      'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
+      'no-nested-ternary': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+    },
+  },
+  {
     files: ['scripts/**/*.mjs'],
     languageOptions: { globals: { ...globals.node } },
   },

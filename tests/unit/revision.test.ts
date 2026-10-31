@@ -79,7 +79,12 @@ describe('applyRevision', () => {
 
   it('keeps locked categories through later budget cuts', () => {
     const plan = makePlan();
-    const locked = applyRevision(plan, makeRevision(plan, { lockCategories: ['venue'], adjustments: [{ category: 'decor', factor: 0.8, reason: '' }] }), 'keep venue, trim decor', TODAY).plan;
+    const locked = applyRevision(
+      plan,
+      makeRevision(plan, { lockCategories: ['venue'], adjustments: [{ category: 'decor', factor: 0.8, reason: '' }] }),
+      'keep venue, trim decor',
+      TODAY,
+    ).plan;
     const cut = applyRevision(locked, makeRevision(locked), 'Reduce the budget by 20%', TODAY).plan;
     expect(amount(cut, 'venue')).toBe(amount(plan, 'venue'));
     expect(budgetSum(cut)).toBe(1_200_000);
@@ -109,12 +114,15 @@ describe('applyRevision', () => {
   it('rejects a revision that moves the event into the past', () => {
     const plan = makePlan();
     expect(() => applyRevision(plan, makeRevision(plan, { eventDate: '2026-01-01' }), 'move it to January', TODAY)).toThrow(RevisionError);
-    expect(() => applyRevision(plan, makeRevision(plan, { eventDate: 'next friday' }), 'move it', TODAY)).toThrow(/could not be understood/);
+    expect(() => applyRevision(plan, makeRevision(plan, { eventDate: 'next friday' }), 'move it', TODAY)).toThrow(
+      /could not be understood/,
+    );
   });
 
   it('reports when nothing would change', () => {
     const plan = makePlan();
-    const attempt = () => applyRevision(plan, makeRevision(plan, { understood: 'I can only help with this event.' }), 'tell me a joke', TODAY);
+    const attempt = () =>
+      applyRevision(plan, makeRevision(plan, { understood: 'I can only help with this event.' }), 'tell me a joke', TODAY);
     expect(attempt).toThrow(RevisionError);
     expect(attempt).toThrow('I can only help with this event.');
   });
@@ -157,7 +165,14 @@ describe('applyRevision', () => {
         regenerateIdeas: true,
         ideas: [
           { title: 'Seated aarti', description: 'd', whyItFits: 'w', estimatedCost: 5000, budgetCategory: 'ceremony', effort: 'low' },
-          { title: 'Golf cart shuttle', description: 'd', whyItFits: 'w', estimatedCost: 900_000, budgetCategory: 'transport_stay', effort: 'medium' },
+          {
+            title: 'Golf cart shuttle',
+            description: 'd',
+            whyItFits: 'w',
+            estimatedCost: 900_000,
+            budgetCategory: 'transport_stay',
+            effort: 'medium',
+          },
         ],
       }),
       'Make this suitable for older guests',
