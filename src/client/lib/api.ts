@@ -13,12 +13,50 @@ export class ClientApiError extends Error {
     this.name = 'ClientApiError';
   }
 
+  /** Worth offering "Try again": the request itself was fine. */
   get retryable(): boolean {
-    return ['network', 'client_timeout', 'ai_timeout', 'ai_unavailable', 'ai_invalid_output', 'ai_rate_limited', 'rate_limited', 'internal'].includes(this.code);
+    return RETRYABLE.includes(this.code);
   }
 }
 
 const CLIENT_TIMEOUT_MS = 150_000;
+
+const RETRYABLE: readonly string[] = [
+  'network',
+  'client_timeout',
+  'ai_timeout',
+  'ai_unavailable',
+  'ai_invalid_output',
+  'ai_rate_limited',
+  'rate_limited',
+  'internal',
+];
+
+/** Why a fetch failed before any response arrived. */
+function fetchFailure(error: unknown, userSignal: AbortSignal | undefined, timeout: AbortSignal): ClientApiError {
+  if (userSignal?.aborted) return new ClientApiError('aborted', 'Cancelled.');
+  if (timeout.aborted) return new ClientApiError('client_timeout', 'The planner took too long to answer. Try again.');
+  if (error instanceof DOMException && error.name === 'AbortError') return new ClientApiError('aborted', 'Cancelled.');
+  return new ClientApiError('network', 'Could not reach Utsav. Check your connection and try again.');
+}
+
+async function readJson(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    throw new ClientApiError('internal', `The server sent an unreadable reply (HTTP ${response.status}).`);
+  }
+}
+
+function responseFailure(body: unknown, status: number): ClientApiError {
+  const error = (body as Partial<ApiErrorBody>).error;
+  return new ClientApiError(
+    error?.code ?? 'internal',
+    error?.message ?? `Request failed (HTTP ${status}).`,
+    error?.fields,
+    error?.retryAfterSeconds,
+  );
+}
 
 async function request<T>(path: string, init: RequestInit & { signal?: AbortSignal } = {}): Promise<T> {
   const timeout = AbortSignal.timeout(CLIENT_TIMEOUT_MS);
@@ -31,26 +69,10 @@ async function request<T>(path: string, init: RequestInit & { signal?: AbortSign
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...init.headers },
     });
   } catch (error) {
-    if (init.signal?.aborted) throw new ClientApiError('aborted', 'Cancelled.');
-    if (timeout.aborted) throw new ClientApiError('client_timeout', 'The planner took too long to answer. Try again.');
-    if (error instanceof DOMException && error.name === 'AbortError') throw new ClientApiError('aborted', 'Cancelled.');
-    throw new ClientApiError('network', 'Could not reach Utsav. Check your connection and try again.');
+    throw fetchFailure(error, init.signal, timeout);
   }
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    throw new ClientApiError('internal', `The server sent an unreadable reply (HTTP ${response.status}).`);
-  }
-  if (!response.ok) {
-    const error = (body as Partial<ApiErrorBody>).error;
-    throw new ClientApiError(
-      error?.code ?? 'internal',
-      error?.message ?? `Request failed (HTTP ${response.status}).`,
-      error?.fields,
-      error?.retryAfterSeconds,
-    );
-  }
+  const body = await readJson(response);
+  if (!response.ok) throw responseFailure(body, response.status);
   return body as T;
 }
 

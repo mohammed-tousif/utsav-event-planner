@@ -20,40 +20,42 @@ export function HistoryTab({ plan, exchangeOpen }: { plan: Plan; exchangeOpen: b
   const currency = plan.input.currency;
   return (
     <>
-    {exchange}
-    <ol className="history" role="list">
-      {plan.revisions.map((entry) => {
-        const moved = entry.diff.lines.filter((l) => l.before !== l.after);
-        return (
-          <li key={entry.id} className="history-entry">
-            <p className="history-when">
-              {when.format(new Date(entry.at))}, {entry.kind === 'ai' ? 'changed with Gemini' : 'edited in the app'}
-            </p>
-            <p className="history-request">{entry.kind === 'ai' ? `“${entry.request}”` : entry.request}</p>
-            {entry.understood && <p className="muted">{entry.understood}</p>}
-            {entry.changes.length > 0 && (
-              <ul>
-                {entry.changes.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            )}
-            {entry.tradeoffs.length > 0 && (
-              <p className="history-tradeoffs">
-                <strong>Trade-offs:</strong> {entry.tradeoffs.join(' ')}
+      {exchange}
+      <ol className="history" role="list">
+        {plan.revisions.map((entry) => {
+          const moved = entry.diff.lines.filter((l) => l.before !== l.after);
+          return (
+            <li key={entry.id} className="history-entry">
+              <p className="history-when">
+                {when.format(new Date(entry.at))}, {entry.kind === 'ai' ? 'changed with Gemini' : 'edited in the app'}
               </p>
-            )}
-            <p className="history-diff">
-              Total {formatMoney(entry.diff.totalBefore, currency)} to {formatMoney(entry.diff.totalAfter, currency)}
-              {entry.diff.guestsBefore !== entry.diff.guestsAfter ? `, guests ${entry.diff.guestsBefore} to ${entry.diff.guestsAfter}` : ''}
-              {entry.diff.dateBefore !== entry.diff.dateAfter ? `, date ${entry.diff.dateBefore} to ${entry.diff.dateAfter}` : ''}.{' '}
-              {moved.length} categor{moved.length === 1 ? 'y' : 'ies'} moved
-              {entry.diff.regenerated.length ? `; rewrote ${entry.diff.regenerated.map((r) => SECTION[r]).join(', ')}` : ''}.
-            </p>
-          </li>
-        );
-      })}
-    </ol>
+              <p className="history-request">{entry.kind === 'ai' ? `“${entry.request}”` : entry.request}</p>
+              {entry.understood && <p className="muted">{entry.understood}</p>}
+              {entry.changes.length > 0 && (
+                <ul>
+                  {entry.changes.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              )}
+              {entry.tradeoffs.length > 0 && (
+                <p className="history-tradeoffs">
+                  <strong>Trade-offs:</strong> {entry.tradeoffs.join(' ')}
+                </p>
+              )}
+              <p className="history-diff">
+                Total {formatMoney(entry.diff.totalBefore, currency)} to {formatMoney(entry.diff.totalAfter, currency)}
+                {entry.diff.guestsBefore !== entry.diff.guestsAfter
+                  ? `, guests ${entry.diff.guestsBefore} to ${entry.diff.guestsAfter}`
+                  : ''}
+                {entry.diff.dateBefore !== entry.diff.dateAfter ? `, date ${entry.diff.dateBefore} to ${entry.diff.dateAfter}` : ''}.{' '}
+                {moved.length} categor{moved.length === 1 ? 'y' : 'ies'} moved
+                {entry.diff.regenerated.length ? `; rewrote ${entry.diff.regenerated.map((r) => SECTION[r]).join(', ')}` : ''}.
+              </p>
+            </li>
+          );
+        })}
+      </ol>
     </>
   );
 }

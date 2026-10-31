@@ -298,7 +298,9 @@ main {
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 150ms, border-color 150ms;
+  transition:
+    background-color 150ms,
+    border-color 150ms;
 }
 
 .button:hover:not(:disabled) {
@@ -1014,7 +1016,9 @@ button.step-link {
   height: 100%;
   min-width: 0;
   background: var(--marigold);
-  transition: width 700ms var(--ease-out), background-color 400ms;
+  transition:
+    width 700ms var(--ease-out),
+    background-color 400ms;
 }
 
 .band-seg:first-child {
@@ -1353,7 +1357,9 @@ button.step-link {
 .task-title {
   font-weight: 600;
   background: linear-gradient(currentColor, currentColor) 0 55% / 0 1.5px no-repeat;
-  transition: background-size 300ms var(--ease-out), color 300ms;
+  transition:
+    background-size 300ms var(--ease-out),
+    color 300ms;
 }
 
 .task[data-done] .task-title {

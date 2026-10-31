@@ -1,12 +1,26 @@
 import { useId, type ReactNode } from 'react';
 
+export interface FieldControl {
+  id: string;
+  describedBy: string | undefined;
+  invalid: boolean;
+}
+
 interface FieldProps {
   label: string;
   hint?: ReactNode;
   error?: string;
   optional?: boolean;
-  children: (props: { id: string; describedBy: string | undefined; invalid: boolean }) => ReactNode;
+  children: (props: FieldControl) => ReactNode;
 }
+
+/** The id and ARIA attributes that tie a control to its Field's label, hint and error. */
+export function controlProps(p: FieldControl) {
+  return { id: p.id, 'aria-describedby': p.describedBy, 'aria-invalid': p.invalid || undefined };
+}
+
+/** Keeps only digits, for numeric text inputs that should accept typing like "1,50,000". */
+export const digitsOnly = (value: string): string => value.replace(/[^\d]/g, '');
 
 /** Label, control, hint and error wired together for assistive tech. */
 export function Field({ label, hint, error, optional, children }: FieldProps) {

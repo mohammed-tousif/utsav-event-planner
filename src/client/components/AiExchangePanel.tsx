@@ -14,10 +14,12 @@ function pretty(reply: string): string {
 export function AiExchangePanel({ exchange, sample, open }: { exchange: AiExchange; sample: boolean; open: boolean }) {
   return (
     <details className="exchange" open={open}>
-      <summary>{sample ? 'Sample data: the prompt that would be sent, and the fixed reply' : 'What was sent to Gemini and what it returned'}</summary>
+      <summary>
+        {sample ? 'Sample data: the prompt that would be sent, and the fixed reply' : 'What was sent to Gemini and what it returned'}
+      </summary>
       <p className="muted">
-        Latest {exchange.kind === 'plan' ? 'plan generation' : 'change'}, {when.format(new Date(exchange.at))}, model {exchange.model}. The app
-        validates this reply and recalculates every amount and date before showing it.
+        Latest {exchange.kind === 'plan' ? 'plan generation' : 'change'}, {when.format(new Date(exchange.at))}, model {exchange.model}. The
+        app validates this reply and recalculates every amount and date before showing it.
       </p>
       <div className="exchange-grid">
         <section aria-labelledby="exchange-prompt">

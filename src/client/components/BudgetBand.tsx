@@ -94,15 +94,14 @@ function BandReadout({ budget, segments, focusKey }: { budget: Budget; segments:
   if (focused) {
     return (
       <span className="band-readout">
-        <strong>{focused.label}</strong> {formatMoney(focused.amount, budget.currency)}, {pct(focused.amount, budget.total)} of the
-        budget
+        <strong>{focused.label}</strong> {formatMoney(focused.amount, budget.currency)}, {pct(focused.amount, budget.total)} of the budget
       </span>
     );
   }
   return (
     <span className="band-readout">
-      <strong>{formatMoney(budget.total - budget.contingency, budget.currency)}</strong> allocated across {segments.length - 1}{' '}
-      categories, with <strong>{formatMoney(budget.contingency, budget.currency)}</strong> held back for surprises
+      <strong>{formatMoney(budget.total - budget.contingency, budget.currency)}</strong> allocated across {segments.length - 1} categories,
+      with <strong>{formatMoney(budget.contingency, budget.currency)}</strong> held back for surprises
     </span>
   );
 }

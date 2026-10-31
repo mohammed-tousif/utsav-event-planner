@@ -15,9 +15,7 @@ export function useReducedMotion(): boolean {
 }
 
 export type Route =
-  | { name: 'home' }
-  | { name: 'new'; eventType: 'wedding' | 'birthday' | 'community' | null }
-  | { name: 'plan'; id: string };
+  { name: 'home' } | { name: 'new'; eventType: 'wedding' | 'birthday' | 'community' | null } | { name: 'plan'; id: string };
 
 export function parseRoute(hash: string): Route {
   const path = hash.replace(/^#/, '') || '/';

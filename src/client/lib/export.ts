@@ -32,7 +32,10 @@ const compact = (date: string) => date.replace(/-/g, '');
 
 /** All-day calendar entries for the event and every open task. */
 export function planToIcs(plan: Plan, stamp = new Date()): string {
-  const dtstamp = stamp.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const dtstamp = stamp
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '');
   const title = planTitle(plan);
   const events: string[][] = [
     [
@@ -58,7 +61,14 @@ export function planToIcs(plan: Plan, stamp = new Date()): string {
         'END:VEVENT',
       ]),
   ];
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Utsav//Event planner//EN', 'CALSCALE:GREGORIAN', ...events.flat(), 'END:VCALENDAR'];
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Utsav//Event planner//EN',
+    'CALSCALE:GREGORIAN',
+    ...events.flat(),
+    'END:VCALENDAR',
+  ];
   return lines.map(fold).join('\r\n') + '\r\n';
 }
 
