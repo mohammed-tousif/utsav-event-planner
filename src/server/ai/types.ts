@@ -1,12 +1,6 @@
 import type { AiPlanDraft, AiRevision, EventInput, Plan } from '../../shared/schemas';
 
-export type AiErrorKind =
-  | 'not_configured'
-  | 'rate_limited'
-  | 'timeout'
-  | 'invalid_output'
-  | 'blocked'
-  | 'unavailable';
+export type AiErrorKind = 'not_configured' | 'rate_limited' | 'timeout' | 'invalid_output' | 'blocked' | 'unavailable';
 
 /** A failure talking to the AI provider, mapped to something users can act on. */
 export class AiError extends Error {

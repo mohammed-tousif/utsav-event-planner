@@ -16,7 +16,10 @@ const BOOLEAN = new Set(['regenerateTasks', 'regenerateSchedule', 'regenerateVen
 const STRING_LISTS = new Set(['tradeoffs', 'assumptions', 'changeSummary', 'questions', 'compareOn', 'redFlags']);
 
 const isObject = (value: unknown): value is Json => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-const inSet = (values: readonly string[]) => (value: unknown): value is string => typeof value === 'string' && values.includes(value);
+const inSet =
+  (values: readonly string[]) =>
+  (value: unknown): value is string =>
+    typeof value === 'string' && values.includes(value);
 const isCategory = inSet(CATEGORY_KEYS);
 const isVendor = inSet(VENDOR_KEYS);
 

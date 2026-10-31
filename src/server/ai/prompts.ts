@@ -127,9 +127,7 @@ export function planPrompt(input: EventInput, today: string): string {
 
 /** A compact view of the current plan so revisions stay grounded in it. */
 export function planSnapshot(plan: Plan): string {
-  const lines = plan.budget.lines
-    .map((l) => `${l.key}: ${l.amount}${l.locked ? ' (locked, keep unchanged)' : ''}`)
-    .join('; ');
+  const lines = plan.budget.lines.map((l) => `${l.key}: ${l.amount}${l.locked ? ' (locked, keep unchanged)' : ''}`).join('; ');
   const tasks = plan.timeline.tasks
     .slice(0, 22)
     .map((t) => `${t.title} [${t.area}, ${t.priority}, ideal ${t.idealOffsetDays} days before${t.done ? ', done' : ''}]`)

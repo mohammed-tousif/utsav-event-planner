@@ -14,9 +14,27 @@ import type { AiProvider, AiResult } from './types';
 
 const TASKS: Record<EventInput['eventType'], AiPlanDraft['tasks']> = {
   wedding: [
-    { title: 'Fix the wedding dates with both families', area: 'other', offsetDays: 200, priority: 'high', notes: 'Check auspicious dates and key relatives’ availability.' },
-    { title: 'Book the venue for all functions', area: 'venue', offsetDays: 180, priority: 'high', notes: 'Confirm setup time and power backup.' },
-    { title: 'Shortlist and book the caterer', area: 'food', offsetDays: 150, priority: 'high', notes: 'Arrange a tasting before paying the advance.' },
+    {
+      title: 'Fix the wedding dates with both families',
+      area: 'other',
+      offsetDays: 200,
+      priority: 'high',
+      notes: 'Check auspicious dates and key relatives’ availability.',
+    },
+    {
+      title: 'Book the venue for all functions',
+      area: 'venue',
+      offsetDays: 180,
+      priority: 'high',
+      notes: 'Confirm setup time and power backup.',
+    },
+    {
+      title: 'Shortlist and book the caterer',
+      area: 'food',
+      offsetDays: 150,
+      priority: 'high',
+      notes: 'Arrange a tasting before paying the advance.',
+    },
     { title: 'Book photographer and videographer', area: 'vendors', offsetDays: 150, priority: 'high', notes: '' },
     { title: 'Finalise decor concept and decorator', area: 'decor', offsetDays: 120, priority: 'medium', notes: '' },
     { title: 'Draft the guest list', area: 'guests', offsetDays: 110, priority: 'high', notes: '' },
@@ -82,9 +100,30 @@ function ideas(input: EventInput): AiPlanDraft['ideas'] {
   const decor: CategoryKey = 'decor';
   const food: CategoryKey = 'catering';
   return [
-    { title: 'Sample idea: theme colour palette', description: `A simple palette drawn from “${input.style}” used across decor and invites.`, whyItFits: 'Placeholder text from sample data.', estimatedCost: Math.round(input.totalBudget * 0.01), budgetCategory: decor, effort: 'low' },
-    { title: 'Sample idea: local specialty counter', description: `One live counter featuring a dish from ${input.city}.`, whyItFits: 'Placeholder text from sample data.', estimatedCost: Math.round(input.totalBudget * 0.03), budgetCategory: food, effort: 'medium' },
-    { title: 'Sample idea: memory wall', description: 'A wall of printed photos guests can add notes to.', whyItFits: 'Placeholder text from sample data.', estimatedCost: Math.round(input.totalBudget * 0.005), budgetCategory: decor, effort: 'low' },
+    {
+      title: 'Sample idea: theme colour palette',
+      description: `A simple palette drawn from “${input.style}” used across decor and invites.`,
+      whyItFits: 'Placeholder text from sample data.',
+      estimatedCost: Math.round(input.totalBudget * 0.01),
+      budgetCategory: decor,
+      effort: 'low',
+    },
+    {
+      title: 'Sample idea: local specialty counter',
+      description: `One live counter featuring a dish from ${input.city}.`,
+      whyItFits: 'Placeholder text from sample data.',
+      estimatedCost: Math.round(input.totalBudget * 0.03),
+      budgetCategory: food,
+      effort: 'medium',
+    },
+    {
+      title: 'Sample idea: memory wall',
+      description: 'A wall of printed photos guests can add notes to.',
+      whyItFits: 'Placeholder text from sample data.',
+      estimatedCost: Math.round(input.totalBudget * 0.005),
+      budgetCategory: decor,
+      effort: 'low',
+    },
   ];
 }
 
@@ -148,11 +187,19 @@ export class SampleProvider implements AiProvider {
 
   async generatePlan(input: EventInput, today: string): Promise<AiResult<AiPlanDraft>> {
     const data = sampleDraft(input);
-    return { data, model: this.model, exchange: { prompt: `Sample data, no AI call.\n\n${planPrompt(input, today)}`, reply: JSON.stringify(data) } };
+    return {
+      data,
+      model: this.model,
+      exchange: { prompt: `Sample data, no AI call.\n\n${planPrompt(input, today)}`, reply: JSON.stringify(data) },
+    };
   }
 
   async revisePlan(plan: Plan, request: string, today: string): Promise<AiResult<AiRevision>> {
     const data = sampleRevision(plan, request);
-    return { data, model: this.model, exchange: { prompt: `Sample data, no AI call.\n\n${revisePrompt(plan, request, today)}`, reply: JSON.stringify(data) } };
+    return {
+      data,
+      model: this.model,
+      exchange: { prompt: `Sample data, no AI call.\n\n${revisePrompt(plan, request, today)}`, reply: JSON.stringify(data) },
+    };
   }
 }

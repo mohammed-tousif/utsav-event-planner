@@ -23,6 +23,34 @@ function int(value: string | undefined, fallback: number, min: number, max: numb
 }
 
 const THINKING_LEVELS = ['MINIMAL', 'LOW', 'MEDIUM', 'HIGH', 'OFF'] as const;
+type ThinkingLevel = ServerConfig['gemini']['thinkingLevel'];
+
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
+const DEFAULT_FALLBACK_MODELS = 'gemini-3.6-flash,gemini-3.8-flash';
+const MAX_FALLBACK_MODELS = 3;
+
+/**
+ * Sample data is only used when explicitly requested, or in development
+ * without a key. Production without a key reports AI as unavailable.
+ */
+function providerFor(env: NodeJS.ProcessEnv, isProduction: boolean, apiKey: string): ProviderName {
+  const requested = (env.AI_PROVIDER ?? '').trim().toLowerCase();
+  if (requested === 'sample') return 'sample';
+  return !isProduction && !apiKey && requested !== 'gemini' ? 'sample' : 'gemini';
+}
+
+function modelList(value: string | undefined): string[] {
+  return (value ?? DEFAULT_FALLBACK_MODELS)
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean)
+    .slice(0, MAX_FALLBACK_MODELS);
+}
+
+function thinkingLevel(value: string | undefined): ThinkingLevel {
+  const level = (value ?? 'LOW').toUpperCase();
+  return (THINKING_LEVELS as readonly string[]).includes(level) ? (level as ThinkingLevel) : 'LOW';
+}
 
 /**
  * Reads configuration from the environment. The API key is only ever held
@@ -31,28 +59,16 @@ const THINKING_LEVELS = ['MINIMAL', 'LOW', 'MEDIUM', 'HIGH', 'OFF'] as const;
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   const isProduction = env.NODE_ENV === 'production';
   const apiKey = (env.GEMINI_API_KEY ?? '').trim();
-  const requested = (env.AI_PROVIDER ?? '').trim().toLowerCase();
-  // Sample data is only used when explicitly requested, or in development
-  // without a key. Production without a key reports AI as unavailable.
-  const provider: ProviderName =
-    requested === 'sample' || (!isProduction && !apiKey && requested !== 'gemini') ? 'sample' : 'gemini';
-  const level = (env.GEMINI_THINKING_LEVEL ?? 'LOW').toUpperCase();
   return {
     port: int(env.PORT, 8080, 1, 65535),
     isProduction,
-    provider,
+    provider: providerFor(env, isProduction, apiKey),
     gemini: {
       apiKey,
-      model: (env.GEMINI_MODEL ?? 'gemini-3.5-flash-lite').trim(),
-      fallbackModels: (env.GEMINI_FALLBACK_MODELS ?? env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.6-flash,gemini-3.8-flash')
-        .split(',')
-        .map((m) => m.trim())
-        .filter(Boolean)
-        .slice(0, 3),
+      model: (env.GEMINI_MODEL ?? DEFAULT_MODEL).trim(),
+      fallbackModels: modelList(env.GEMINI_FALLBACK_MODELS ?? env.GEMINI_FALLBACK_MODEL),
       timeoutMs: int(env.GEMINI_TIMEOUT_MS, 40_000, 5_000, 120_000),
-      thinkingLevel: (THINKING_LEVELS as readonly string[]).includes(level)
-        ? (level as ServerConfig['gemini']['thinkingLevel'])
-        : 'LOW',
+      thinkingLevel: thinkingLevel(env.GEMINI_THINKING_LEVEL),
     },
     rateLimit: {
       windowMs: int(env.RATE_LIMIT_WINDOW_MS, 15 * 60_000, 1_000, 24 * 3_600_000),
