@@ -127,6 +127,7 @@ function ideas(input: EventInput): AiPlanDraft['ideas'] {
   ];
 }
 
+/** Fixed placeholder content for development without an API key. Always labelled as sample data. */
 export function sampleDraft(input: EventInput): AiPlanDraft {
   return {
     summary: 'Sample data for development. Connect a Gemini API key to generate a personalised plan.',
@@ -180,6 +181,7 @@ export function sampleRevision(plan: Plan, request: string): AiRevision {
   };
 }
 
+/** Stands in for Gemini in development and tests; plans it creates are clearly marked as sample data. */
 export class SampleProvider implements AiProvider {
   readonly name = 'sample' as const;
   readonly model = 'sample-data';

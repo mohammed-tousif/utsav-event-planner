@@ -140,6 +140,7 @@ export const PlanMetaSchema = z.object({
 });
 export type PlanMeta = z.infer<typeof PlanMetaSchema>;
 
+/** A complete saved plan. Plans read from storage or imported files are validated against it. */
 export const PlanSchema = z.object({
   schemaVersion: z.literal(1),
   id: z.string().min(1).max(64),

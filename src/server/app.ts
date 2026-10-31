@@ -57,6 +57,7 @@ function serveClient(app: Express, staticDir: string): void {
   });
 }
 
+/** Builds the Express app: security headers, the JSON API and, when built, the web client. */
 export function createApp(deps: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');

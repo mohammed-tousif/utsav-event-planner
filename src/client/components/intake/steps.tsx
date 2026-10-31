@@ -11,9 +11,9 @@ import {
   PRIORITY_LABELS,
   VENUE_STATUSES,
   VENUE_STATUS_LABELS,
-  type Currency,
 } from '../../../shared/constants';
 import { addDays } from '../../../shared/dates';
+import { isOneOf } from '../../../shared/guards';
 import { formatMoney } from '../../../shared/money';
 import { navigate } from '../../lib/hooks';
 import { ChoiceGroup, controlProps, digitsOnly, Field } from '../fields';
@@ -62,6 +62,7 @@ function DateAndGuests({ draft, set, error, today }: StepProps) {
   );
 }
 
+/** Step 1: event type, name, date, guests, city and venue status. */
 export function BasicsStep({ draft, set, error, today }: StepProps) {
   return (
     <>
@@ -134,6 +135,7 @@ function budgetHint(draft: Draft): string {
   return `${formatMoney(budget, draft.currency)}${perGuest}`;
 }
 
+/** Step 2: total budget, currency and top priorities. */
 export function BudgetStep({ draft, set, error }: StepProps) {
   return (
     <>
@@ -156,7 +158,9 @@ export function BudgetStep({ draft, set, error }: StepProps) {
               id={p.id}
               aria-describedby={p.describedBy}
               value={draft.currency}
-              onChange={(e) => set('currency', e.target.value as Currency)}
+              onChange={(e) => {
+                if (isOneOf(CURRENCIES, e.target.value)) set('currency', e.target.value);
+              }}
             >
               {CURRENCIES.map((c) => (
                 <option key={c} value={c}>
@@ -174,7 +178,7 @@ export function BudgetStep({ draft, set, error }: StepProps) {
         name="priorities"
         options={PRIORITY_KEYS}
         labels={PRIORITY_LABELS}
-        value={draft.priorities as never}
+        value={draft.priorities}
         onChange={(v) => set('priorities', v)}
         max={3}
         error={error('priorities')}
@@ -183,6 +187,7 @@ export function BudgetStep({ draft, set, error }: StepProps) {
   );
 }
 
+/** Step 4: style, food needs, accessibility, customs and notes. */
 export function PreferencesStep({ draft, set, error }: StepProps) {
   return (
     <>
@@ -200,7 +205,7 @@ export function PreferencesStep({ draft, set, error }: StepProps) {
         name="dietary"
         options={DIETARY_KEYS}
         labels={DIETARY_LABELS}
-        value={draft.dietary as never}
+        value={draft.dietary}
         onChange={(v) => set('dietary', v)}
       />
       <ChoiceGroup
@@ -210,7 +215,7 @@ export function PreferencesStep({ draft, set, error }: StepProps) {
         name="accessibility"
         options={ACCESSIBILITY_KEYS}
         labels={ACCESSIBILITY_LABELS}
-        value={draft.accessibility as never}
+        value={draft.accessibility}
         onChange={(v) => set('accessibility', v)}
       />
       <Field

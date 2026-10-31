@@ -4,6 +4,7 @@ import type { Plan } from '../../shared/schemas';
 
 const EFFORT = { low: 'Easy to arrange', medium: 'Some planning', high: 'Needs a lot of planning' } as const;
 
+/** Personalised ideas with why they fit, rough cost and whether the budget line covers it. */
 export function IdeasTab({ plan, changed }: { plan: Plan; changed: boolean }) {
   if (plan.ideas.length === 0) {
     return <p className="empty">No ideas yet. Ask for some in the change box, for example “Suggest ideas for older guests”.</p>;

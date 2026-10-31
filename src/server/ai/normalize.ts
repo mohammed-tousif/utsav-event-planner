@@ -66,6 +66,7 @@ function list(value: unknown): Json[] {
   return Array.isArray(value) ? value.filter(isObject).map(normalizeScalars) : [];
 }
 
+/** Repairs small, predictable deviations in a model reply before strict validation. */
 export function normalizeModelJson(raw: unknown): unknown {
   if (!isObject(raw)) return raw;
   const node = normalizeScalars(raw);

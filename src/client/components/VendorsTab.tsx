@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatMoney } from '../../shared/money';
 import { VENDOR_STATUSES, type Plan, type Vendor, type VendorStatus } from '../../shared/schemas';
+import { isOneOf } from '../../shared/guards';
 import { bookByLabel } from '../lib/format';
 import { digitsOnly } from './fields';
 
@@ -18,6 +19,7 @@ interface VendorsTabProps {
   onUpdate: (id: string, patch: Partial<Pick<Vendor, 'status' | 'quote' | 'notes'>>) => void;
 }
 
+/** The vendor checklist with status, quotes checked against the budget, and questions to ask. */
 export function VendorsTab({ plan, today, onUpdate }: VendorsTabProps) {
   const booked = plan.vendors.filter((v) => v.status === 'booked').length;
   return (
@@ -60,7 +62,13 @@ function VendorControls({ vendor, plan, today, onUpdate }: { vendor: Vendor; pla
     <div className="vendor-controls">
       <div className="mini-field">
         <label htmlFor={`${id}-status`}>Status</label>
-        <select id={`${id}-status`} value={vendor.status} onChange={(e) => onUpdate(vendor.id, { status: e.target.value as VendorStatus })}>
+        <select
+          id={`${id}-status`}
+          value={vendor.status}
+          onChange={(e) => {
+            if (isOneOf(VENDOR_STATUSES, e.target.value)) onUpdate(vendor.id, { status: e.target.value });
+          }}
+        >
           {VENDOR_STATUSES.map((s) => (
             <option key={s} value={s}>
               {STATUS_LABELS[s]}

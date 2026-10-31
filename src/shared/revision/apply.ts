@@ -28,6 +28,7 @@ interface RevisionContext {
   today: string;
 }
 
+/** Turns scheduled tasks back into seeds so they can be re-dated. */
 export function taskSeeds(tasks: readonly Task[]): TaskSeed[] {
   return tasks.map((task) => ({
     id: task.id,
@@ -40,12 +41,14 @@ export function taskSeeds(tasks: readonly Task[]): TaskSeed[] {
   }));
 }
 
+/** The reason shown on each budget line, so it survives recalculation. */
 export function lineRationales(plan: Plan): Rationales {
   const rationales: Rationales = {};
   for (const line of plan.budget.lines) if (line.rationale) rationales[line.key] = line.rationale;
   return rationales;
 }
 
+/** Adds a change to the plan's history, newest first, keeping the most recent ones. */
 export function appendHistory(plan: Plan, entry: RevisionEntry): RevisionEntry[] {
   return [entry, ...plan.revisions].slice(0, MAX_HISTORY);
 }

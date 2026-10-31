@@ -159,7 +159,8 @@ Covered: budget totals and rounding for every event type, locks and infeasible l
 
 - **Small units with one job.** Each step of a revision (new details, locks, weights, budget, sections) and each Gemini concern (request building, reply validation, error mapping, model health) is its own function or module. The intake form is one component per step plus a form hook.
 - **Limits enforced, not just intended.** ESLint fails the build if a function's cyclomatic complexity passes 15, a function passes 80 lines, a file passes 300 lines, nesting passes 3 levels or a function takes more than 5 parameters. `any` is banned and type-only imports are explicit.
-- **Strict TypeScript** (`strict`, `noUncheckedIndexedAccess`), with every runtime boundary validated by zod.
+- **Strict TypeScript** (`strict`, `noUncheckedIndexedAccess`), with every runtime boundary validated by zod. No `any`, no non-null assertions and no `as never` escapes: browser data such as saved drafts and `<select>` values is narrowed with type guards instead.
+- **Documented modules.** Every exported function, class and schema has a short doc comment saying what it is for.
 - **Consistent formatting** with Prettier and `.editorconfig`, checked in CI.
 - **Continuous integration.** GitHub Actions runs `npm run check` and the Playwright suite on every push to `main`.
 
@@ -213,6 +214,7 @@ src/
       intake/          the five-step form: one component per step, draft validation, form hook
       plan/            plan header, exports, editing hook
     lib/               API client, storage, exports, formatting
+    styles/            one stylesheet per area (tokens, controls, each screen, print), imported in order
 tests/
   unit/                engine, schemas, prompts, Gemini provider, client logic
   api/                 HTTP tests with Supertest

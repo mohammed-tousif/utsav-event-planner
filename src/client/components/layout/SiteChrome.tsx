@@ -43,6 +43,7 @@ export function SiteHeader({ status }: { status: StatusResponse | null }) {
   );
 }
 
+/** The honest disclaimer about estimates and local storage. */
 export function SiteFooter() {
   return (
     <footer className="site-footer no-print">

@@ -8,6 +8,7 @@ export interface Logger {
   log(level: Level, event: string, fields?: Record<string, string | number | boolean | undefined>): void;
 }
 
+/** Writes one JSON line per event to stdout, errors to stderr. */
 export const consoleLogger: Logger = {
   log(level, event, fields = {}) {
     const line = JSON.stringify({ time: new Date().toISOString(), severity: level.toUpperCase(), event, ...fields });
@@ -16,4 +17,5 @@ export const consoleLogger: Logger = {
   },
 };
 
+/** Discards everything; used in tests. */
 export const silentLogger: Logger = { log() {} };

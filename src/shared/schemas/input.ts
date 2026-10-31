@@ -38,6 +38,7 @@ export const CommunityDetailsSchema = z.object({
   entry: z.enum(COMMUNITY_ENTRY),
 });
 
+/** Everything the user tells us about the event, validated identically in the browser and on the server. */
 export const EventInputSchema = z
   .object({
     eventType: z.enum(EVENT_TYPES),

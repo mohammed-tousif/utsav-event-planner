@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PlanSchema, type EventInputDraft, type Plan } from '../../shared/schemas';
+import { PlanSchema, type Plan } from '../../shared/schemas';
 
 /**
  * Plans are stored only in this browser's localStorage. Every read is
@@ -41,10 +41,12 @@ function storage(): Storage | null {
   }
 }
 
+/** Whether this browser lets us save plans. */
 export function storageAvailable(): boolean {
   return storage() !== null;
 }
 
+/** The plan's name, or a sensible one built from the event details. */
 export function planTitle(plan: Pick<Plan, 'input'>): string {
   if (plan.input.title) return plan.input.title;
   const name = plan.input.birthday?.honoreeName;
@@ -62,6 +64,7 @@ function readIndex(store: Storage): PlanSummary[] {
   }
 }
 
+/** Saved plans, most recently changed first. */
 export function listPlans(): PlanSummary[] {
   const store = storage();
   if (!store) return [];
@@ -70,6 +73,7 @@ export function listPlans(): PlanSummary[] {
 
 export type SaveResult = { ok: true } | { ok: false; reason: 'unavailable' | 'quota' };
 
+/** Saves a plan and updates the list of plans, keeping the most recent ones. */
 export function savePlan(plan: Plan): SaveResult {
   const store = storage();
   if (!store) return { ok: false, reason: 'unavailable' };
@@ -93,6 +97,7 @@ export function savePlan(plan: Plan): SaveResult {
 
 export type LoadResult = { ok: true; plan: Plan } | { ok: false; reason: 'missing' | 'corrupt' | 'unavailable' };
 
+/** Reads and validates a saved plan. */
 export function loadPlan(id: string): LoadResult {
   const store = storage();
   if (!store) return { ok: false, reason: 'unavailable' };
@@ -101,6 +106,7 @@ export function loadPlan(id: string): LoadResult {
   return parsePlanJson(raw);
 }
 
+/** Validates a plan from storage or an imported file. */
 export function parsePlanJson(raw: string): { ok: true; plan: Plan } | { ok: false; reason: 'corrupt' } {
   try {
     const parsed = PlanSchema.safeParse(JSON.parse(raw));
@@ -110,6 +116,7 @@ export function parsePlanJson(raw: string): { ok: true; plan: Plan } | { ok: fal
   }
 }
 
+/** Removes a plan from this browser. */
 export function deletePlan(id: string): void {
   const store = storage();
   if (!store) return;
@@ -117,7 +124,8 @@ export function deletePlan(id: string): void {
   store.setItem(INDEX_KEY, JSON.stringify(readIndex(store).filter((p) => p.id !== id)));
 }
 
-export function saveDraft(draft: Partial<EventInputDraft>): void {
+/** Keeps the unfinished intake form between visits. */
+export function saveDraft(draft: object): void {
   try {
     storage()?.setItem(DRAFT_KEY, JSON.stringify(draft));
   } catch {
@@ -125,17 +133,19 @@ export function saveDraft(draft: Partial<EventInputDraft>): void {
   }
 }
 
-export function loadDraft(): Partial<EventInputDraft> | null {
+/** The saved form draft as plain data; the form checks each field before using it. */
+export function loadDraft(): Record<string, unknown> | null {
   try {
     const raw = storage()?.getItem(DRAFT_KEY);
     if (!raw) return null;
     const value: unknown = JSON.parse(raw);
-    return value && typeof value === 'object' ? (value as Partial<EventInputDraft>) : null;
+    return value && typeof value === 'object' && !Array.isArray(value) ? { ...value } : null;
   } catch {
     return null;
   }
 }
 
+/** Forgets the unfinished form once a plan is created. */
 export function clearDraft(): void {
   try {
     storage()?.removeItem(DRAFT_KEY);

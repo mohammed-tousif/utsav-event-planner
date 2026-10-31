@@ -23,6 +23,7 @@ function PlanNotFound({ message }: { message: string }) {
   );
 }
 
+/** The whole app: routes between the home page, the intake form and a plan. */
 export function App() {
   const route = useRoute();
   const today = useToday(clientToday);

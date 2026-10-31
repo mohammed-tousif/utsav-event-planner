@@ -91,6 +91,7 @@ function typeDetails(input: EventInput): string {
   return '';
 }
 
+/** The event as plain facts for the prompt, with every free-text field wrapped as untrusted user text. */
 export function describeEvent(input: EventInput, today: string): string {
   const days = daysBetween(today, input.eventDate);
   const categories = categoriesFor(input.eventType)
@@ -118,6 +119,7 @@ export function describeEvent(input: EventInput, today: string): string {
     .join('\n');
 }
 
+/** The prompt for drafting a new plan. */
 export function planPrompt(input: EventInput, today: string): string {
   const vendors = vendorTemplatesFor(input.eventType)
     .map((v) => `${v.key} (${v.label})`)
@@ -144,6 +146,7 @@ export function planSnapshot(plan: Plan): string {
   ].join('\n');
 }
 
+/** The prompt for a change request: the current plan, locks and the request itself. */
 export function revisePrompt(plan: Plan, request: string, today: string): string {
   const vendors = vendorTemplatesFor(plan.input.eventType)
     .map((v) => v.key)

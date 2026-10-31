@@ -6,6 +6,7 @@
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const DAY_MS = 86_400_000;
 
+/** True for a real calendar date written as YYYY-MM-DD. */
 export function isISODate(value: string): boolean {
   const match = ISO_DATE.exec(value);
   if (!match) return false;
@@ -20,6 +21,7 @@ function toUTC(value: string): number {
   return Date.UTC(y, m - 1, d);
 }
 
+/** The YYYY-MM-DD form of a UTC date. */
 export function fromUTC(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }
@@ -29,6 +31,7 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((toUTC(to) - toUTC(from)) / DAY_MS);
 }
 
+/** Adds (or with a negative number, subtracts) whole days to a YYYY-MM-DD date. */
 export function addDays(date: string, days: number): string {
   return fromUTC(toUTC(date) + days * DAY_MS);
 }

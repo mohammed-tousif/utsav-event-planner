@@ -44,6 +44,7 @@ const ABSOLUTE_BUDGET =
   /\b(?:total |overall |the |our |my )?budget\b(.{0,20}?)\b(?:to|of|at)\s*(?:₹|rs\.?|inr|\$|usd|€|£)?\s*([\d,]+(?:\.\d+)?)\s*(lakhs?|lacs?|k|thousand|crores?|cr)?\b/;
 const GUEST_WORD = /\b(guests?|people|attendees|headcount|persons|pax|invitees)\b/;
 
+/** Reads "12", "1,50,000" or "12 lakh" as a whole number of currency units. */
 export function parseAmount(raw: string, unit?: string): number | undefined {
   const value = Number(raw.replace(/,/g, ''));
   if (!Number.isFinite(value) || value <= 0) return undefined;
@@ -111,6 +112,7 @@ function guestCount(text: string, current: number): Reading | undefined {
   return undefined;
 }
 
+/** Exact budget and guest changes stated in a request, with notes explaining them. */
 export function parseIntent(request: string, input: IntentInput): ParsedIntent {
   const text = request.toLowerCase().replace(/\s+/g, ' ');
   const budget = percentBudget(text, input) ?? absoluteBudget(text, input);

@@ -1,12 +1,15 @@
 import {
   MAX_DAYS_AHEAD,
+  type AccessibilityKey,
   type BirthdayAgeGroup,
   type BirthdayAudience,
   type CommunityEntry,
   type CommunityFormat,
   type CommunitySetting,
   type Currency,
+  type DietaryKey,
   type EventType,
+  type PriorityKey,
   type VenueStatus,
   type WeddingFunction,
 } from '../../../shared/constants';
@@ -23,9 +26,9 @@ export interface Draft {
   currency: Currency;
   city: string;
   style: string;
-  priorities: string[];
-  dietary: string[];
-  accessibility: string[];
+  priorities: PriorityKey[];
+  dietary: DietaryKey[];
+  accessibility: AccessibilityKey[];
   culturalNotes: string;
   notes: string;
   venueStatus: VenueStatus | '';
@@ -66,6 +69,23 @@ export const EMPTY_DRAFT: Draft = {
   entry: '',
 };
 
+/**
+ * Rebuilds a draft saved in the browser, keeping only fields that still have
+ * the expected shape. Anything else (old versions, edits outside the app)
+ * falls back to the empty form; the schema validates values before use.
+ */
+export function restoreDraft(saved: Record<string, unknown> | null): Draft {
+  const draft: Record<string, unknown> = { ...EMPTY_DRAFT };
+  for (const [key, empty] of Object.entries(EMPTY_DRAFT)) {
+    const value = saved?.[key];
+    const sameShape = Array.isArray(empty)
+      ? Array.isArray(value) && value.every((v) => typeof v === 'string')
+      : typeof value === typeof empty;
+    if (sameShape) draft[key] = value;
+  }
+  return draft as unknown as Draft;
+}
+
 export const STEPS = ['basics', 'budget', 'details', 'preferences', 'review'] as const;
 export type Step = (typeof STEPS)[number];
 
@@ -86,6 +106,7 @@ const STEP_FIELDS: Record<Step, string[]> = {
   review: [],
 };
 
+/** Reads a typed number, ignoring commas and spaces; empty input becomes NaN. */
 export const numberFrom = (value: string): number => (value.trim() === '' ? Number.NaN : Number(value.replace(/[,\s_]/g, '')));
 
 /** A positive number typed into the form, or undefined. */
@@ -178,11 +199,13 @@ export function validate(draft: Draft, today: string): { input?: EventInput; err
   return { input: parsed.success && Object.keys(errors).length === 0 ? parsed.data : undefined, errors };
 }
 
+/** The errors that belong to one step of the form. */
 export function errorsForStep(step: Step, errors: Errors): Errors {
   const owned = STEP_FIELDS[step];
   return Object.fromEntries(Object.entries(errors).filter(([key]) => owned.some((f) => key === f || key.startsWith(`${f}.`))));
 }
 
+/** Steps that still have something to fix, in order. */
 export function stepsWithErrors(errors: Errors): Step[] {
   return STEPS.filter((step) => Object.keys(errorsForStep(step, errors)).length > 0);
 }

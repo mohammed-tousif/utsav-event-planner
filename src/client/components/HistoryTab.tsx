@@ -5,6 +5,7 @@ import { AiExchangePanel } from './AiExchangePanel';
 const SECTION = { tasks: 'tasks', schedule: 'event-day schedule', vendors: 'vendor guidance', ideas: 'ideas' } as const;
 const when = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 
+/** Every change made to the plan, newest first, with the latest AI prompt and reply. */
 export function HistoryTab({ plan, exchangeOpen }: { plan: Plan; exchangeOpen: boolean }) {
   const exchange = plan.meta.exchange ? (
     <AiExchangePanel exchange={plan.meta.exchange} sample={plan.meta.source === 'sample'} open={exchangeOpen} />

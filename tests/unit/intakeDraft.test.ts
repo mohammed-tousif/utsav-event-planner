@@ -3,6 +3,7 @@ import {
   EMPTY_DRAFT,
   errorsForStep,
   positiveNumber,
+  restoreDraft,
   stepsWithErrors,
   toInput,
   validate,
@@ -70,5 +71,14 @@ describe('intake draft', () => {
     expect(positiveNumber('1,200')).toBe(1200);
     expect(positiveNumber('0')).toBeUndefined();
     expect(positiveNumber('')).toBeUndefined();
+  });
+
+  it('restores a saved draft but drops fields with the wrong shape', () => {
+    const restored = restoreDraft({ city: 'Hubballi', guestCount: 250, priorities: ['food', 3], unknown: 'x' });
+    expect(restored.city).toBe('Hubballi');
+    expect(restored.guestCount).toBe('');
+    expect(restored.priorities).toEqual([]);
+    expect(restored).not.toHaveProperty('unknown');
+    expect(restoreDraft(null)).toEqual(EMPTY_DRAFT);
   });
 });

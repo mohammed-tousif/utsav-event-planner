@@ -35,6 +35,7 @@ export interface GeminiClient {
   generate(model: string, contents: string, config: GenerateContentConfig): Promise<ModelReply>;
 }
 
+/** The real Gemini client. Tests pass a fake that implements the same interface. */
 export function createGoogleClient(apiKey: string): GeminiClient {
   const ai = new GoogleGenAI({ apiKey });
   return {
@@ -51,6 +52,7 @@ export function createGoogleClient(apiKey: string): GeminiClient {
 
 type Outcome<T> = { ok: true; result: AiResult<T> } | { ok: false; error: AiError };
 
+/** Calls Gemini for plans and revisions with request-style and model fallbacks, and validates every reply. */
 export class GeminiProvider implements AiProvider {
   readonly name = 'gemini' as const;
   readonly model: string;
@@ -104,11 +106,12 @@ export class GeminiProvider implements AiProvider {
    * Every reply is validated with zod before it is used.
    */
   private async call<T>(request: StructuredRequest<T>): Promise<AiResult<T>> {
-    if (!this.client) throw new AiError('not_configured', 'The AI planner is not configured on this server yet.');
+    const client = this.client;
+    if (!client) throw new AiError('not_configured', 'The AI planner is not configured on this server yet.');
     const models = this.health.readyModels([this.config.model, ...this.config.fallbackModels]);
     let lastError: AiError | undefined;
     for (const model of models) {
-      const outcome = await this.tryModel(model, request);
+      const outcome = await this.tryModel(client, model, request);
       if (outcome.ok) return outcome.result;
       lastError = outcome.error;
       if (!canFallBack(lastError, request.signal)) break;
@@ -117,26 +120,31 @@ export class GeminiProvider implements AiProvider {
   }
 
   /** Tries the request styles this model still accepts, retrying malformed output once. */
-  private async tryModel<T>(model: string, request: StructuredRequest<T>): Promise<Outcome<T>> {
-    const modes = this.health.usableModes(model);
+  private async tryModel<T>(client: GeminiClient, model: string, request: StructuredRequest<T>): Promise<Outcome<T>> {
+    const remaining = this.health.usableModes(model);
+    let mode = remaining.shift();
     let lastError = new AiError('unavailable', 'The AI planner did not respond.');
     let retriedOutput = false;
-    for (let index = 0; index < modes.length;) {
-      const outcome = await this.attempt(model, modes[index]!, request);
+    while (mode) {
+      const outcome = await this.attempt(client, { model, mode }, request);
       if (outcome.ok) return outcome;
       lastError = outcome.error;
-      if (lastError.diagnostics?.badRequest) index += 1;
+      if (lastError.diagnostics?.badRequest) mode = remaining.shift();
       else if (lastError.kind === 'invalid_output' && !retriedOutput) retriedOutput = true;
       else break;
     }
     return { ok: false, error: lastError };
   }
 
-  private async attempt<T>(model: string, mode: CallMode, request: StructuredRequest<T>): Promise<Outcome<T>> {
+  private async attempt<T>(
+    client: GeminiClient,
+    { model, mode }: { model: string; mode: CallMode },
+    request: StructuredRequest<T>,
+  ): Promise<Outcome<T>> {
     const started = Date.now();
     const contents = contentsFor(mode, request);
     try {
-      const reply = await this.client!.generate(model, contents, configFor(mode, request, this.config));
+      const reply = await client.generate(model, contents, configFor(mode, request, this.config));
       const { data, text } = readReply(reply, request.schema);
       this.logger.log('info', 'ai_call', { task: request.task, model, mode, ms: Date.now() - started, ok: true });
       return { ok: true, result: { data, model, exchange: { prompt: contents, reply: text } } };

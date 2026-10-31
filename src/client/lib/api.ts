@@ -2,6 +2,7 @@ import type { ApiErrorBody, ApiErrorCode, GenerateResponse, ReviseResponse, Stat
 import { todayISO } from '../../shared/dates';
 import type { EventInput, Plan } from '../../shared/schemas';
 
+/** An API or network failure with a message users can act on. */
 export class ClientApiError extends Error {
   constructor(
     public readonly code: ApiErrorCode | 'network' | 'aborted' | 'client_timeout',
@@ -76,12 +77,15 @@ async function request<T>(path: string, init: RequestInit & { signal?: AbortSign
   return body as T;
 }
 
+/** Today's date on the user's device, so plans follow their calendar. */
 export const clientToday = (): string => todayISO();
 
+/** Whether AI is connected on the server. */
 export function fetchStatus(signal?: AbortSignal): Promise<StatusResponse> {
   return request<StatusResponse>('/api/status', { signal });
 }
 
+/** Asks the server to draft a plan with Gemini. */
 export function generatePlan(input: EventInput, signal?: AbortSignal): Promise<GenerateResponse> {
   return request<GenerateResponse>('/api/plans', {
     method: 'POST',
@@ -90,6 +94,7 @@ export function generatePlan(input: EventInput, signal?: AbortSignal): Promise<G
   });
 }
 
+/** Sends a plain-English change request for the current plan. */
 export function revisePlan(plan: Plan, change: string, signal?: AbortSignal): Promise<ReviseResponse> {
   return request<ReviseResponse>('/api/plans/revise', {
     method: 'POST',

@@ -198,6 +198,7 @@ export const VENDOR_CATALOG: Record<EventType, VendorTemplate[]> = {
   ],
 };
 
+/** The standard vendor checklist for an event type. */
 export function vendorTemplatesFor(eventType: EventType): VendorTemplate[] {
   return VENDOR_CATALOG[eventType];
 }

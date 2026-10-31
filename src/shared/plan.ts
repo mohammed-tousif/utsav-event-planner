@@ -9,6 +9,7 @@ import { vendorTemplatesFor, type VendorKey } from './vendorCatalog';
 type AiVendor = z.output<typeof AiVendorSchema>;
 type AiIdea = z.output<typeof AiIdeaSchema>;
 
+/** A random, unguessable id for plans, tasks and other records. */
 export const newId = (): string => globalThis.crypto.randomUUID();
 
 /* ------------------------------------------------------------------ */
@@ -154,11 +155,13 @@ export function buildIdeas(input: EventInput, aiIdeas: readonly AiIdea[], budget
     });
 }
 
+/** Whether a cost fits inside the budget line it would come from. */
 export function fitsLine(cost: number, category: CategoryKey, budget: Budget): boolean {
   const line = budget.lines.find((l) => l.key === category);
   return line ? cost <= line.amount : false;
 }
 
+/** Rechecks every idea against the current budget after amounts change. */
 export function refreshIdeaFit(ideas: readonly Idea[], budget: Budget): Idea[] {
   return ideas.map((idea) => ({ ...idea, fitsBudget: fitsLine(idea.estimatedCost, idea.budgetCategory, budget) }));
 }

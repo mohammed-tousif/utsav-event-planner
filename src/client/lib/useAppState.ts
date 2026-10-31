@@ -60,6 +60,7 @@ export function useRoutePlan(route: Route) {
 
 const PAGE_TITLES: Record<string, string> = { home: 'Utsav — event planner', new: 'Plan an event — Utsav' };
 
+/** Keeps the browser tab title in step with the screen. */
 export function useDocumentTitle(route: Route, plan: Plan | null): void {
   useEffect(() => {
     document.title = route.name === 'plan' && plan ? `${plan.input.title || 'Your plan'} — Utsav` : (PAGE_TITLES[route.name] ?? 'Utsav');

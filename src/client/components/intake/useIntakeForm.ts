@@ -4,13 +4,12 @@ import { intakeChecks } from '../../../shared/intake';
 import type { Plan } from '../../../shared/schemas';
 import { ClientApiError, generatePlan } from '../../lib/api';
 import { clearDraft, loadDraft, saveDraft } from '../../lib/storage';
-import { EMPTY_DRAFT, errorsForStep, STEPS, stepsWithErrors, validate, type Draft, type Errors, type Step } from './draft';
+import { EMPTY_DRAFT, errorsForStep, restoreDraft, STEPS, stepsWithErrors, validate, type Draft, type Errors, type Step } from './draft';
 
 export type SetField = <K extends keyof Draft>(key: K, value: Draft[K]) => void;
 
 function initialDraft(initialType: EventType | null): Draft {
-  const saved = loadDraft() as Partial<Draft> | null;
-  const merged = { ...EMPTY_DRAFT, ...(saved ?? {}) };
+  const merged = restoreDraft(loadDraft());
   // Starting a different kind of event begins from a clean form.
   return initialType && merged.eventType !== initialType ? { ...EMPTY_DRAFT, eventType: initialType } : merged;
 }
@@ -47,7 +46,7 @@ export function useIntakeForm(initialType: EventType | null, today: string, onPl
   const [failure, setFailure] = useState<ClientApiError | null>(null);
   const headingRef = useFocusOnStepChange(step);
 
-  useEffect(() => saveDraft(draft as never), [draft]);
+  useEffect(() => saveDraft(draft), [draft]);
 
   const result = useMemo(() => validate(draft, today), [draft, today]);
   const checks = useMemo(() => (result.input ? intakeChecks(result.input, today) : []), [result.input, today]);

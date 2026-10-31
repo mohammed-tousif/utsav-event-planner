@@ -11,6 +11,7 @@ const LOCALE: Record<Currency, string> = {
 
 const formatters = new Map<Currency, Intl.NumberFormat>();
 
+/** Whole-unit money in the currency's own locale, e.g. "₹15,00,000" or "$1,200". */
 export function formatMoney(amount: number, currency: Currency): string {
   let formatter = formatters.get(currency);
   if (!formatter) {

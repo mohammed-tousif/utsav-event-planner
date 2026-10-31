@@ -39,6 +39,7 @@ export function contentsFor(mode: CallMode, request: StructuredRequest<unknown>)
   return `${request.prompt}\n\nReturn only a JSON object that matches this JSON Schema exactly:\n${JSON.stringify(request.jsonSchema)}`;
 }
 
+/** Gemini request settings for one request style, with a per-call timeout. */
 export function configFor(mode: CallMode, request: StructuredRequest<unknown>, settings: Settings): GenerateContentConfig {
   const timeout = AbortSignal.timeout(settings.timeoutMs);
   const shared: GenerateContentConfig = {

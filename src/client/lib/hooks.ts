@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 
 const QUERY = '(prefers-reduced-motion: reduce)';
 
+/** Follows the user's reduced-motion setting. */
 export function useReducedMotion(): boolean {
   return useSyncExternalStore(
     (callback) => {
@@ -17,6 +18,7 @@ export function useReducedMotion(): boolean {
 export type Route =
   { name: 'home' } | { name: 'new'; eventType: 'wedding' | 'birthday' | 'community' | null } | { name: 'plan'; id: string };
 
+/** The screen named in the URL hash. */
 export function parseRoute(hash: string): Route {
   const path = hash.replace(/^#/, '') || '/';
   const plan = /^\/plan\/([\w-]{1,64})$/.exec(path);
@@ -26,10 +28,12 @@ export function parseRoute(hash: string): Route {
   return { name: 'home' };
 }
 
+/** Moves to another screen by changing the URL hash. */
 export function navigate(path: string): void {
   if (window.location.hash !== `#${path}`) window.location.hash = path;
 }
 
+/** The current screen, updated when the URL hash changes. */
 export function useRoute(): Route {
   const [route, setRoute] = useState(() => parseRoute(window.location.hash));
   useEffect(() => {

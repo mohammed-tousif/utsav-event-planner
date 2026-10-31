@@ -8,6 +8,7 @@ type AiScheduleItem = z.output<typeof AiScheduleItemSchema>;
 
 export const MAX_TASK_OFFSET = 730;
 
+/** An event date in the past or too far ahead; the message is shown to users. */
 export class DateRangeError extends Error {
   constructor(message: string) {
     super(message);
@@ -90,6 +91,7 @@ function dedupeByTitle<T extends { title: string }>(items: readonly T[]): T[] {
   });
 }
 
+/** Warnings about the time left: short notice, and tasks that had to be brought forward. */
 export function timelineWarnings(eventType: string, daysUntil: number, tasks: readonly Task[]): string[] {
   const warnings: string[] = [];
   const compressed = tasks.filter((task) => task.compressed).length;
@@ -152,6 +154,7 @@ export const PHASE_LABELS: Record<TaskPhase, string> = {
   event_day: 'On the day',
 };
 
+/** The preparation phase a task belongs to, from how many days before the event it is due. */
 export function phaseFor(offsetDays: number): TaskPhase {
   if (offsetDays === 0) return 'event_day';
   if (offsetDays <= 14) return 'final_week';

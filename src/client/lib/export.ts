@@ -72,6 +72,7 @@ export function planToIcs(plan: Plan, stamp = new Date()): string {
   return lines.map(fold).join('\r\n') + '\r\n';
 }
 
+/** A safe file name for exports, from the plan title and date. */
 export function fileSlug(plan: Plan): string {
   const slug = planTitle(plan)
     .toLowerCase()
@@ -82,6 +83,7 @@ export function fileSlug(plan: Plan): string {
   return `${slug || 'utsav-plan'}-${plan.input.eventDate}`;
 }
 
+/** Saves text as a file through the browser. */
 export function downloadFile(filename: string, contents: string, type: string): void {
   const blob = new Blob([contents], { type });
   const url = URL.createObjectURL(blob);

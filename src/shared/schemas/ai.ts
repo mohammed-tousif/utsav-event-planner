@@ -46,6 +46,7 @@ export const AiIdeaSchema = z.object({
   effort: z.enum(['low', 'medium', 'high']),
 });
 
+/** What Gemini returns for a new plan. Amounts and dates are computed by the app, not taken from here. */
 export const AiPlanDraftSchema = z.object({
   summary: aiText(500),
   contingencyPct: z.number().finite(),
@@ -59,6 +60,7 @@ export const AiPlanDraftSchema = z.object({
 });
 export type AiPlanDraft = z.output<typeof AiPlanDraftSchema>;
 
+/** What Gemini returns for a change request: what should change, never the final numbers. */
 export const AiRevisionSchema = z.object({
   understood: aiText(240),
   totalBudget: z.number().finite(),

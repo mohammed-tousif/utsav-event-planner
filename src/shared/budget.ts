@@ -30,6 +30,7 @@ export interface BudgetParams {
   tradeoffs?: string[];
 }
 
+/** A budget that cannot be satisfied, such as locked amounts larger than the total. */
 export class BudgetInfeasibleError extends Error {
   constructor(message: string) {
     super(message);
@@ -37,11 +38,13 @@ export class BudgetInfeasibleError extends Error {
   }
 }
 
+/** Keeps an AI weight adjustment within the allowed range; anything invalid becomes 1 (no change). */
 export function clampFactor(value: number | undefined): number {
   if (value === undefined || !Number.isFinite(value)) return 1;
   return Math.min(AI_FACTOR_MAX, Math.max(AI_FACTOR_MIN, value));
 }
 
+/** Keeps the contingency percentage within the allowed range, to one decimal place. */
 export function clampContingency(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.min(CONTINGENCY_MAX, Math.max(CONTINGENCY_MIN, Math.round(value * 10) / 10));
@@ -209,6 +212,7 @@ function inrWarnings(params: BudgetParams, lines: readonly BudgetLine[]): Budget
   return warnings;
 }
 
+/** Plain-language warnings about the budget, based on Indian price levels for INR plans. */
 export function budgetWarnings(params: BudgetParams, lines: readonly BudgetLine[]): BudgetWarning[] {
   if (params.currency === 'INR') return inrWarnings(params, lines);
   return [
@@ -227,6 +231,7 @@ export function lockedAmounts(lines: readonly BudgetLine[]): Partial<Record<Cate
   return locked;
 }
 
+/** Sum of every line plus contingency; always equals the budget total. */
 export function allocatedTotal(budget: Budget): number {
   return budget.lines.reduce((sum, line) => sum + line.amount, 0) + budget.contingency;
 }

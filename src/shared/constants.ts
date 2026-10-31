@@ -183,6 +183,7 @@ export const EVENT_CONFIG: Record<EventType, EventTypeConfig> = {
   },
 };
 
+/** Budget categories that apply to an event type, in display order. */
 export function categoriesFor(eventType: EventType): CategoryKey[] {
   return CATEGORY_KEYS.filter((key) => EVENT_CONFIG[eventType].baseWeights[key] !== undefined);
 }

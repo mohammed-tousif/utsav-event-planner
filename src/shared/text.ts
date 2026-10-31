@@ -1,6 +1,5 @@
-// Control characters other than tab, newline and carriage return.
-// eslint-disable-next-line no-control-regex
-const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+/** Unicode control characters (category Cc) other than tab, newline and carriage return. */
+const CONTROL_CHARS = /[^\P{Cc}\t\n\r]/gu;
 const ZERO_WIDTH = /[\u200B-\u200D\u2060\uFEFF]/g;
 
 /**

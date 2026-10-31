@@ -87,6 +87,7 @@ function manualEntry(notes: string[], diff: RevisionEntry['diff'], at: string): 
   };
 }
 
+/** Applies a direct edit and recalculates the plan in code, without calling the AI. */
 export function applyManualChange(plan: Plan, change: ManualChange, today: string): RevisionResult {
   const notes: string[] = [];
   const input: EventInput = {
