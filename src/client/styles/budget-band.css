@@ -1,0 +1,97 @@
+/* The budget band */
+.band {
+  margin: 0 0 var(--space-6);
+}
+
+.band-track {
+  display: flex;
+  gap: 2px;
+  height: 24px;
+  width: 100%;
+}
+
+.band-seg {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  background: var(--marigold);
+  transition:
+    width 700ms var(--ease-out),
+    background-color 400ms;
+}
+
+.band-seg:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.band-seg:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.band-seg[data-contingency] {
+  background: repeating-linear-gradient(135deg, var(--ink-3) 0 2px, transparent 2px 6px);
+  box-shadow: inset 0 0 0 1.5px var(--ink-3);
+}
+
+.band-seg[data-changed] {
+  background-color: var(--rani);
+}
+
+.band-seg[data-contingency][data-changed] {
+  background: repeating-linear-gradient(135deg, var(--rani) 0 2px, transparent 2px 6px);
+  box-shadow: inset 0 0 0 1.5px var(--rani);
+}
+
+.band-seg[data-focus] {
+  filter: brightness(0.82);
+}
+
+@media (prefers-color-scheme: dark) {
+  .band-seg[data-focus] {
+    filter: brightness(1.2);
+  }
+}
+
+.band-caption {
+  margin-top: var(--space-2);
+  min-height: 1.6em;
+  color: var(--ink-2);
+}
+
+.band-readout strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+.jump-to-change {
+  margin: calc(-1 * var(--space-4)) 0 var(--space-5);
+}
+
+@media (min-width: 64rem) {
+  .jump-to-change {
+    display: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .plan-layout {
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    align-items: start;
+  }
+
+  .plan-side {
+    position: sticky;
+    top: var(--space-4);
+  }
+}
+
+.plan-side {
+  display: grid;
+  gap: var(--space-6);
+}

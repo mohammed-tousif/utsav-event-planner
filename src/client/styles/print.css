@@ -1,0 +1,74 @@
+/* ------------------------------------------------------------------ */
+/* Print                                                                */
+/* ------------------------------------------------------------------ */
+
+.print-plan {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  .no-print,
+  .skip-link {
+    display: none !important;
+  }
+
+  .print-plan {
+    display: block;
+  }
+
+  .print-plan h1 {
+    font-size: 24pt;
+    font-stretch: 78%;
+  }
+
+  .print-plan h2 {
+    font-size: 15pt;
+    margin-top: 14pt;
+    border-bottom: 1.5pt solid #000;
+    padding-bottom: 2pt;
+  }
+
+  .print-plan h3 {
+    font-size: 12pt;
+    margin-top: 8pt;
+  }
+
+  .print-plan p,
+  .print-plan li {
+    margin-top: 4pt;
+  }
+
+  .print-plan table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6pt;
+  }
+
+  .print-plan th,
+  .print-plan td {
+    text-align: left;
+    padding: 3pt 4pt;
+    border-bottom: 0.5pt solid #999;
+    vertical-align: top;
+  }
+
+  .print-plan tr,
+  .print-vendor {
+    break-inside: avoid;
+  }
+
+  .print-source {
+    font-size: 9pt;
+    color: #444;
+  }
+}

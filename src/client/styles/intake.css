@@ -1,0 +1,196 @@
+/* ------------------------------------------------------------------ */
+/* Intake                                                               */
+/* ------------------------------------------------------------------ */
+
+.intake {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+@media (min-width: 60rem) {
+  .intake {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    align-items: start;
+  }
+}
+
+.steps ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin-bottom: var(--space-5);
+  font-size: var(--step--1);
+}
+
+.step-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  color: var(--ink-3);
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+}
+
+button.step-link {
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.steps [aria-current='step'] .step-link {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+}
+
+.steps [aria-current='step'] .step-number {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.steps [data-done] .step-number {
+  background: var(--peacock-wash);
+  border-color: var(--peacock);
+}
+
+.intake-form {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 40rem;
+}
+
+.step-title {
+  font-size: var(--step-4);
+  font-stretch: 78%;
+  font-weight: 700;
+}
+
+.checks {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.review-note {
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}
+
+.invite {
+  position: sticky;
+  top: var(--space-4);
+}
+
+.invite-card {
+  padding: var(--space-5);
+  border-radius: var(--radius-l);
+  background: var(--ink);
+  color: var(--paper);
+  position: relative;
+  overflow: hidden;
+}
+
+/* A thin marigold toran along the top edge of the card. */
+.invite-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 10px;
+  background: radial-gradient(circle at 8px 0, var(--marigold) 6px, transparent 6.5px) 0 0 / 16px 10px repeat-x;
+}
+
+@media (prefers-color-scheme: dark) {
+  .invite-card {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--hairline);
+  }
+}
+
+.invite-kind {
+  margin-top: var(--space-2);
+  color: var(--marigold);
+  font-weight: 650;
+}
+
+@media (prefers-color-scheme: light) {
+  .invite-kind {
+    color: #f2b529;
+  }
+}
+
+.invite-title {
+  font-size: var(--step-3);
+  font-weight: 720;
+  font-stretch: 75%;
+  line-height: 1.05;
+  margin-block: var(--space-2) var(--space-4);
+  overflow-wrap: anywhere;
+}
+
+.invite-facts {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.invite-facts div {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid color-mix(in oklab, currentColor 22%, transparent);
+}
+
+.invite-facts dt {
+  opacity: 0.75;
+  font-size: var(--step--1);
+}
+
+.invite-facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 59.99rem) {
+  .invite {
+    position: static;
+    order: -1;
+  }
+
+  .invite-card {
+    padding: var(--space-4);
+  }
+
+  .invite-title {
+    font-size: var(--step-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .invite-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .invite-facts div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

@@ -1,0 +1,72 @@
+/* Utsav design tokens
+   Ink on cool paper, with marigold for money and rani pink for change.
+   One typeface, Anek Latin, used at two widths: condensed for display
+   and numbers, normal for reading. */
+
+:root {
+  color-scheme: light;
+  --paper: #f5f6fa;
+  --surface: #ffffff;
+  --ink: #1e1b3a;
+  --ink-2: #55536e;
+  --ink-3: #6e6c8a;
+  --hairline: #d9dbe6;
+  --hairline-strong: #b9bccd;
+  --peacock: #0b6b66;
+  --on-peacock: #ffffff;
+  --peacock-wash: #e7f3f2;
+  --marigold: #b87a00;
+  --marigold-wash: #fff4d6;
+  --rani: #b3134e;
+  --rani-wash: #fce8ef;
+  --sindoor: #a3341f;
+  --sindoor-wash: #fbebe7;
+  --focus: #0b6b66;
+
+  --font: 'Anek Latin Variable', 'Segoe UI', system-ui, sans-serif;
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.5625rem;
+  --step-3: 1.953rem;
+  --step-4: 2.441rem;
+  --step-5: 3.052rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 18px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --page: 72rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #13122a;
+    --surface: #1c1b38;
+    --ink: #ecebf6;
+    --ink-2: #b6b4cf;
+    --ink-3: #9a98b8;
+    --hairline: #2f2d55;
+    --hairline-strong: #46447a;
+    --peacock: #4fc3b8;
+    --on-peacock: #13122a;
+    --peacock-wash: #173a3e;
+    --marigold: #f2b529;
+    --marigold-wash: #3a2f12;
+    --rani: #f27ba6;
+    --rani-wash: #3d1a2c;
+    --sindoor: #ff8a73;
+    --sindoor-wash: #3d1d1a;
+    --focus: #4fc3b8;
+  }
+}

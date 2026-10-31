@@ -1,0 +1,145 @@
+/* Budget table */
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.budget-table th,
+.budget-table td {
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  vertical-align: top;
+}
+
+.budget-table thead th {
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--ink-2);
+  border-bottom-color: var(--hairline-strong);
+}
+
+.budget-table tbody th {
+  font-weight: 400;
+}
+
+.budget-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.line-label {
+  display: block;
+  font-weight: 620;
+}
+
+.line-why {
+  display: block;
+  color: var(--ink-2);
+  font-size: var(--step--1);
+  max-width: 48ch;
+}
+
+.amount {
+  display: block;
+  font-weight: 650;
+  font-stretch: 88%;
+  font-size: var(--step-1);
+}
+
+.delta {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 0 0.4rem;
+  border-radius: 4px;
+  font-size: var(--step--1);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  background: var(--rani-wash);
+  color: var(--rani);
+}
+
+.budget-table tr[data-changed] > th,
+.budget-table tr[data-changed] > td {
+  animation: changed 2.4s var(--ease-out);
+}
+
+@keyframes changed {
+  0%,
+  35% {
+    background: var(--rani-wash);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.budget-table tr[data-focus] > th,
+.budget-table tr[data-focus] > td {
+  background: var(--marigold-wash);
+}
+
+.budget-table tfoot th,
+.budget-table tfoot td {
+  border-bottom: 0;
+  border-top: 2px solid var(--ink);
+  font-weight: 700;
+}
+
+.contingency-row .line-label::before {
+  content: '';
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 0.4em;
+  border-radius: 2px;
+  background: repeating-linear-gradient(135deg, var(--ink-3) 0 2px, transparent 2px 5px);
+  box-shadow: inset 0 0 0 1.5px var(--ink-3);
+  vertical-align: -1px;
+}
+
+.lock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  font-size: var(--step--1);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.table-note {
+  margin-top: var(--space-3);
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.inline-form label {
+  font-weight: 600;
+}
+
+.inline-form .field-hint {
+  flex-basis: 100%;
+}
+
+.tradeoffs {
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border-left: 3px solid var(--marigold);
+  background: var(--surface);
+  border-radius: 0 var(--radius-m) var(--radius-m) 0;
+}
+
+.tradeoffs ul {
+  margin-top: var(--space-2);
+  display: grid;
+  gap: var(--space-1);
+}

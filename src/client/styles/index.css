@@ -1,0 +1,25 @@
+/*
+ * Utsav styles, one file per area. Order matters: design tokens first, then
+ * base styles, shared controls, each screen, and finally motion and print
+ * overrides.
+ */
+@import './tokens.css';
+@import './base.css';
+@import './frame.css';
+@import './controls.css';
+@import './notices.css';
+@import './home.css';
+@import './intake.css';
+@import './generating.css';
+@import './plan-header.css';
+@import './budget-band.css';
+@import './tabs.css';
+@import './budget.css';
+@import './timeline.css';
+@import './vendors.css';
+@import './ideas.css';
+@import './history.css';
+@import './revise.css';
+@import './motion.css';
+@import './print.css';
+@import './exchange.css';

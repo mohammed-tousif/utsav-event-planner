@@ -1,0 +1,47 @@
+/* ------------------------------------------------------------------ */
+/* Generating                                                           */
+/* ------------------------------------------------------------------ */
+
+.generating {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+  padding-top: var(--space-8);
+}
+
+.generating h1 {
+  font-size: var(--step-4);
+  font-stretch: 78%;
+}
+
+.elapsed {
+  color: var(--ink-2);
+}
+
+.garland {
+  display: flex;
+  gap: 6px;
+  height: 22px;
+  align-items: flex-start;
+}
+
+.garland span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--marigold);
+  animation: sway 1.2s ease-in-out infinite alternate;
+}
+
+.garland span:nth-child(3n) {
+  background: var(--rani);
+}
+
+@keyframes sway {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(8px);
+  }
+}

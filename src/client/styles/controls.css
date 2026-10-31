@@ -1,0 +1,232 @@
+/* ------------------------------------------------------------------ */
+/* Controls                                                             */
+/* ------------------------------------------------------------------ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  border: 1.5px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    border-color 150ms;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--ink-2);
+}
+
+.button.primary {
+  background: var(--peacock);
+  border-color: var(--peacock);
+  color: var(--on-peacock);
+}
+
+.button.primary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--peacock) 88%, var(--ink));
+}
+
+.button.quiet {
+  background: transparent;
+}
+
+.button.small {
+  min-height: 36px;
+  padding: 0.3rem 0.8rem;
+  font-size: var(--step--1);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--peacock);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--hairline-strong);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.45;
+}
+
+input.short {
+  max-width: 8rem;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  width: 1.15rem;
+  height: 1.15rem;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--peacock);
+  flex: none;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+  border-color: var(--focus);
+}
+
+[aria-invalid='true'] {
+  border-color: var(--sindoor);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.field-label {
+  font-weight: 620;
+  padding: 0;
+}
+
+.field-optional {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.field-hint {
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}
+
+.field-error {
+  color: var(--sindoor);
+  font-weight: 600;
+  font-size: var(--step--1);
+}
+
+.field-error::before {
+  content: '! ';
+}
+
+.field-row {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 36rem) {
+  .field-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .field-row.budget-row {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0.4rem 0.9rem;
+  border: 1.5px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+}
+
+.pill[data-checked] {
+  border-color: var(--peacock);
+  background: var(--peacock-wash);
+  font-weight: 600;
+}
+
+.pill:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pill:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.mini-field {
+  display: grid;
+  gap: 2px;
+  font-size: var(--step--1);
+}
+
+.mini-field label {
+  color: var(--ink-2);
+}
+
+.mini-field.wide {
+  margin-top: var(--space-4);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.chip {
+  min-height: 36px;
+  padding: 0.3rem 0.75rem;
+  border: 1px dashed var(--hairline-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step--1);
+  text-align: left;
+  cursor: pointer;
+}
+
+.chip:hover:not(:disabled) {
+  border-style: solid;
+  border-color: var(--peacock);
+}

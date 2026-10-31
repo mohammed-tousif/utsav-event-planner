@@ -1,0 +1,82 @@
+/* ------------------------------------------------------------------ */
+/* Frame                                                                */
+/* ------------------------------------------------------------------ */
+
+.site-header,
+.site-footer,
+.page {
+  max-width: var(--page);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .site-header,
+  .site-footer,
+  .page {
+    padding-inline: var(--space-6);
+  }
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  font-stretch: 80%;
+  font-size: var(--step-1);
+}
+
+.wordmark-tile {
+  fill: var(--ink);
+}
+
+.wordmark-petals {
+  fill: var(--marigold);
+}
+
+@media (prefers-color-scheme: dark) {
+  .wordmark-tile {
+    fill: var(--surface);
+  }
+}
+
+.ai-status {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+  text-align: right;
+}
+
+.ai-status[data-sample] {
+  color: var(--sindoor);
+  font-weight: 600;
+}
+
+main {
+  min-height: 70vh;
+}
+
+.page {
+  padding-block: var(--space-5) var(--space-8);
+}
+
+.page.narrow {
+  max-width: 40rem;
+}
+
+.site-footer {
+  padding-block: var(--space-5) var(--space-7);
+  border-top: 1px solid var(--hairline);
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}

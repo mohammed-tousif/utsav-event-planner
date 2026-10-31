@@ -1,0 +1,91 @@
+/* Revise panel */
+.revise {
+  padding: var(--space-5);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+}
+
+.revise h2 {
+  margin-bottom: var(--space-4);
+}
+
+.revise form {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.revise .form-actions {
+  margin-top: var(--space-3);
+}
+
+.revise-feedback:not(:empty) {
+  margin-top: var(--space-4);
+}
+
+.change-list {
+  margin-top: var(--space-2);
+  display: grid;
+  gap: var(--space-1);
+}
+
+.working {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-2);
+}
+
+.dot-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--rani);
+  animation: pulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.quick-edit {
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hairline);
+}
+
+.quick-edit form {
+  margin-top: var(--space-3);
+}
+
+.quick-edit .button {
+  justify-self: start;
+}
+
+.export h2 {
+  font-size: var(--step-1);
+}
+
+.export-actions {
+  display: grid;
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+
+.export-actions .button {
+  justify-content: flex-start;
+}

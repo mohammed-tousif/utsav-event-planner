@@ -1,0 +1,36 @@
+/* History */
+.history {
+  display: grid;
+}
+
+.history-entry {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.history-when {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.history-request {
+  font-weight: 650;
+  font-size: var(--step-1);
+}
+
+.history-diff,
+.history-tradeoffs {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.assumptions {
+  margin-top: var(--space-6);
+  color: var(--ink-2);
+}
+
+.assumptions ul {
+  margin-top: var(--space-2);
+}

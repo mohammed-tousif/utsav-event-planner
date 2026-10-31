@@ -1,0 +1,63 @@
+/* ------------------------------------------------------------------ */
+/* Notices                                                              */
+/* ------------------------------------------------------------------ */
+
+.notice {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-m);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+}
+
+.notice-icon {
+  flex: none;
+  margin-top: 2px;
+}
+
+.notice-title {
+  font-weight: 650;
+}
+
+.notice-warn {
+  background: var(--marigold-wash);
+  border-color: color-mix(in oklab, var(--marigold) 45%, transparent);
+}
+
+.notice-warn .notice-icon {
+  color: var(--marigold);
+}
+
+.notice-error {
+  background: var(--sindoor-wash);
+  border-color: color-mix(in oklab, var(--sindoor) 45%, transparent);
+}
+
+.notice-error .notice-icon {
+  color: var(--sindoor);
+}
+
+.notice-success {
+  background: var(--peacock-wash);
+  border-color: color-mix(in oklab, var(--peacock) 40%, transparent);
+}
+
+.notice-success .notice-icon,
+.notice-info .notice-icon {
+  color: var(--peacock);
+}
+
+.notice ul {
+  margin-top: var(--space-1);
+}
+
+.notice-action {
+  margin-top: var(--space-2);
+}
+
+.stack-s {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}

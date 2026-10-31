@@ -1,0 +1,55 @@
+/* ------------------------------------------------------------------ */
+/* Plan                                                                 */
+/* ------------------------------------------------------------------ */
+
+.plan-head {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-4) var(--space-5);
+}
+
+.plan-kind {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.plan-title {
+  font-size: clamp(2.4rem, 7vw, 4.6rem);
+  overflow-wrap: anywhere;
+}
+
+.plan-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  margin: var(--space-2) 0 0;
+}
+
+.plan-facts dt {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.plan-facts dd {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+
+.provenance {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--peacock);
+}
+
+.provenance[data-sample] {
+  border-color: var(--sindoor);
+  color: var(--sindoor);
+  font-weight: 600;
+}
+
+.plan-summary {
+  font-size: var(--step-1);
+  max-width: 60ch;
+}

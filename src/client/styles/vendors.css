@@ -1,0 +1,104 @@
+/* Vendors */
+.vendor-list {
+  display: grid;
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--hairline-strong);
+}
+
+.vendor {
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.vendor-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.vendor[data-status='booked'] .vendor-name::after {
+  content: ' (booked)';
+  color: var(--peacock);
+  font-weight: 600;
+  font-size: var(--step--1);
+}
+
+.source {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.source[data-source='ai']::before {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.35em;
+  border-radius: 50%;
+  background: var(--peacock);
+}
+
+.vendor-why {
+  margin-top: var(--space-2);
+}
+
+.vendor-controls {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+@media (min-width: 40rem) {
+  .vendor-controls {
+    grid-template-columns: 12rem 14rem 1fr;
+    align-items: end;
+  }
+
+  .vendor-due {
+    grid-column: 1 / -1;
+  }
+}
+
+.vendor-budget,
+.vendor-due {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.vendor-details {
+  margin-top: var(--space-3);
+}
+
+.vendor-details summary,
+.assumptions summary,
+.quick-edit summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--peacock);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.vendor-detail-grid {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+@media (min-width: 40rem) {
+  .vendor-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.vendor-detail-grid h4 {
+  margin-bottom: var(--space-1);
+}
+
+.vendor-detail-grid ul {
+  display: grid;
+  gap: var(--space-1);
+}

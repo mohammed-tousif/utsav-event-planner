@@ -1,0 +1,121 @@
+/* ------------------------------------------------------------------ */
+/* Home                                                                 */
+/* ------------------------------------------------------------------ */
+
+.display {
+  font-size: clamp(2.6rem, 8vw, 5.4rem);
+  font-weight: 720;
+  font-stretch: 75%;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.hero {
+  padding-block: var(--space-6) var(--space-7);
+}
+
+.lede {
+  margin-top: var(--space-4);
+  font-size: var(--step-1);
+  color: var(--ink-2);
+  max-width: 52ch;
+}
+
+.choices {
+  margin-top: var(--space-6);
+  border-top: 2px solid var(--ink);
+}
+
+.choice {
+  display: grid;
+  gap: var(--space-1) var(--space-5);
+  padding: var(--space-5) var(--space-2);
+  border-bottom: 1px solid var(--hairline-strong);
+  color: var(--ink);
+  text-decoration: none;
+  position: relative;
+}
+
+@media (min-width: 48rem) {
+  .choice {
+    grid-template-columns: minmax(12rem, 1fr) 1.2fr 1.4fr;
+    align-items: baseline;
+  }
+}
+
+.choice-name {
+  font-size: var(--step-4);
+  font-weight: 700;
+  font-stretch: 75%;
+  line-height: 1;
+}
+
+.choice-line {
+  font-size: var(--step-1);
+}
+
+.choice-example {
+  color: var(--ink-2);
+}
+
+.choice::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 3px;
+  width: 0;
+  background: var(--marigold);
+  transition: width 260ms var(--ease-out);
+}
+
+.choice:hover::after,
+.choice:focus-visible::after {
+  width: 100%;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.plan-list {
+  border-top: 1px solid var(--hairline);
+}
+
+.plan-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.plan-row-link {
+  display: grid;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.plan-row-title {
+  font-weight: 640;
+  font-size: var(--step-1);
+}
+
+.plan-row-link:hover .plan-row-title {
+  text-decoration: underline;
+}
+
+.plan-row-meta {
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}
+
+.saved .notice {
+  margin-bottom: var(--space-3);
+}
