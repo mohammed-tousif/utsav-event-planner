@@ -7,13 +7,15 @@ Utsav turns a few answers about an event into a plan you can actually work from:
 **Live app:** https://utsav-event-planner.onrender.com
 (free hosting: the first request after a quiet period can take about a minute while the server wakes up)
 
+**In this README:** [Who it is for](#who-it-is-for) · [Chosen vertical](#chosen-vertical) · [How the solution works](#how-the-solution-works) · [Approach and logic](#approach-and-logic) · [GenAI usage](#genai-usage) · [Testing](#testing) · [Code quality](#code-quality) · [Assumptions made](#assumptions-made)
+
 ## Who it is for
 
 The main user is a family member or a couple organizing an Indian wedding on a fixed budget, for example a two-day wedding in Hubballi for 250 guests on ₹15,00,000, with a vegetarian and Jain menu, many elderly guests and a morning ceremony. They are not professional planners. They need to know where the money should go, what to book first, what to ask each vendor, and what happens to the plan when the budget, the guest count or the date changes. Birthdays and community events use the same engine with their own questions, budget categories and vendor checklists.
 
 This is a design target, not the result of user research: Utsav has not been tested with real users.
 
-## Challenge
+## Chosen vertical
 
 PromptWars Virtual, Challenge 5: **Celebration & Event Planner**.
 _"Create a GenAI-powered planning assistant that helps users organize weddings, birthdays, and community events with budgets, timelines, vendor checklists, and personalized ideas."_
@@ -26,7 +28,7 @@ _"Create a GenAI-powered planning assistant that helps users organize weddings, 
 | Vendor checklists                     | Vendors tab: every vendor the event needs, why, questions to ask, what to compare, red flags, status and quotes   |
 | Personalized ideas                    | Ideas tab: ideas with an explicit "why it fits", an estimated cost and the budget line it would come from         |
 
-## How it works
+## How the solution works
 
 ```
 Browser (React)                     Server (Express)                      Google Gemini
@@ -47,7 +49,7 @@ Band animates old → new ◀── plan + diff
 
 **The split of responsibilities is the core idea.** Gemini decides _what_ a good plan looks like for this event (which categories deserve more weight and why, which tasks matter, what to ask vendors, which ideas fit). The app decides _how much_ and _when_: every rupee and every date is computed in TypeScript, so totals always add up, nothing goes negative, and a "kept" category never moves.
 
-### Approach and logic
+## Approach and logic
 
 1. **Intake.** Five short steps: basics, budget and priorities, event-specific follow-up questions (wedding functions and days; whose birthday and who is coming; community event format, setting and entry), style and preferences, then a review step that flags anything unusual (short notice, no venue a month out, a tight budget per guest, a likely extra zero) before any AI call.
 2. **Generation.** The server sends Gemini a prompt assembled from validated fields, with every free-text field wrapped in `<user_text>` tags that the system instruction says to treat as information only. Gemini returns JSON constrained by a JSON Schema derived from the same zod schema the server validates against.
@@ -221,7 +223,7 @@ tests/
   e2e/                 Playwright journeys, accessibility and mobile checks
 ```
 
-## Assumptions and limitations
+## Assumptions made
 
 - Costs are estimates based on Indian price levels for INR plans. Other currencies work, but tight-budget warnings only apply to INR.
 - Utsav does not search, list, rate or verify real vendors, and does not check availability or prices. The vendor checklist tells you what to look for; you record real quotes yourself.
